@@ -1,0 +1,46 @@
+{
+    "name": "leuchtfeuer/mautic-contact-segments",
+    "description": "TODO",
+    "license": "TODO",
+    "type": "mautic-plugin",
+    "homepage": "https://www.Leuchtfeuer.com",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.4",
+        "mautic/core-lib": "^3.0|^4.0",
+        "mautic/plugin-social": "*",
+        "ext-json": "*"
+    },
+    "extra": {
+        "install-directory-name": "MauticContactSegmentsBundle"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "friendsofphp/php-cs-fixer": "^3.4",
+        "symfony/browser-kit": "^5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "MauticPlugin\\MauticContactSegmentsBundle\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MauticPlugin\\MauticContactSegmentsBundle\\Tests\\": "Tests"
+        }
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/dennisameling/FOSOAuthServerBundle.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/mautic/BazingaOAuthServerBundle.git"
+        }
+    ],
+    "scripts": {
+        "cs-fix": "./vendor/bin/php-cs-fixer fix --config .php-cs-fixer.php --using-cache no --show-progress dots -v"
+    }
+}
