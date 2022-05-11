@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\EventListener;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\EventListener;
 
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Type\UpdateMultiselectFieldType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ActionSubscriber implements EventSubscriberInterface
 {
-    public const EVENT  = 'plugin.contact_segments_action_event';
-    public const ACTION = 'plugin.contact_segments_action';
+    public const EVENT  = 'plugin.multiselect_handling_action_event';
+    public const ACTION = 'plugin.multiselect_handling_action';
 
     private LeadModel $leadModel;
 

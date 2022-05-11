@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\Tests\Unit\Form\Loader;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\Form\Loader;
 
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Loader\LeadFieldValuesChoiceLoader;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldValuesChoiceLoader;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

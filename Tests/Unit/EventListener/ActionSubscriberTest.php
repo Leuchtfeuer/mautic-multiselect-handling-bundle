@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\Tests\Unit\EventListener;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\EventListener;
 
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticContactSegmentsBundle\EventListener\ActionSubscriber;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Type\UpdateMultiselectFieldType;
+use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -114,8 +114,8 @@ class ActionSubscriberTest extends TestCase
             ->willReturn([
                 'other'                            => 'value',
                 UpdateMultiselectFieldType::FIELD  => $fieldId,
-                UpdateMultiselectFieldType::ADD    => ['alias_add_1', 'alias_add_2'],
-                UpdateMultiselectFieldType::REMOVE => ['alias_remove_1', 'alias_remove_2'],
+                UpdateMultiselectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
+                UpdateMultiselectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
             ]);
         $event->expects(self::once())
             ->method('getLead')

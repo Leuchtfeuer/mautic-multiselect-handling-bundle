@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\Exception;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\Exception;
 
 class UnexpectedTypeException extends \RuntimeException
 {

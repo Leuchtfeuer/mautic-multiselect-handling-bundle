@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\Tests\Functional;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Functional;
 
 use Mautic\CampaignBundle\Entity\Campaign;
 use Mautic\CampaignBundle\Entity\Event;
@@ -10,7 +10,7 @@ use Mautic\CampaignBundle\Entity\Lead as CampaignLead;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadRepository;
-use MauticPlugin\MauticContactSegmentsBundle\EventListener\ActionSubscriber;
+use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpFoundation\Request;
