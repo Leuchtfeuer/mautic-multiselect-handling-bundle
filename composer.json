@@ -1,5 +1,5 @@
 {
-    "name": "leuchtfeuer/mautic-contact-segments",
+    "name": "leuchtfeuer/mautic-multiselect-handling",
     "description": "TODO",
     "license": "TODO",
     "type": "mautic-plugin",
@@ -13,7 +13,7 @@
         "ext-json": "*"
     },
     "extra": {
-        "install-directory-name": "MauticContactSegmentsBundle"
+        "install-directory-name": "MauticMultiselectHandlingBundle"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -22,12 +22,12 @@
     },
     "autoload": {
         "psr-4": {
-            "MauticPlugin\\MauticContactSegmentsBundle\\": ""
+            "MauticPlugin\\MauticMultiselectHandlingBundle\\": ""
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "MauticPlugin\\MauticContactSegmentsBundle\\Tests\\": "Tests"
+            "MauticPlugin\\MauticMultiselectHandlingBundle\\Tests\\": "Tests"
         }
     },
     "repositories": [

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\Tests\Functional;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Functional;
 
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use Mautic\FormBundle\Model\FormModel;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticContactSegmentsBundle\EventListener\FormSubscriber;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Type\SettingsType;
+use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\FormSubscriber;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 

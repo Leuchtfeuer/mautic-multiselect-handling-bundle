@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\Tests\Unit\EventListener;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\EventListener;
 
 use Mautic\FormBundle\Entity\Action;
 use Mautic\FormBundle\Event\SubmissionEvent;
@@ -12,10 +12,10 @@ use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\LeadBundle\Model\ListModel;
-use MauticPlugin\MauticContactSegmentsBundle\EventListener\FormAction;
-use MauticPlugin\MauticContactSegmentsBundle\EventListener\FormSubscriber;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Loader\LeadFieldChoiceLoader;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Type\SettingsType;
+use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\FormAction;
+use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\FormSubscriber;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

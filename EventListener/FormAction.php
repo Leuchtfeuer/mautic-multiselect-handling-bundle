@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticContactSegmentsBundle\EventListener;
+namespace MauticPlugin\MauticMultiselectHandlingBundle\EventListener;
 
 use Mautic\FormBundle\Event\SubmissionEvent;
 use Mautic\FormBundle\Exception\ValidationException;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\LeadBundle\Model\ListModel;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Loader\LeadFieldChoiceLoader;
-use MauticPlugin\MauticContactSegmentsBundle\Form\Type\SettingsType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FormAction implements EventSubscriberInterface
 {
-    public const ACTION = 'mautic.plugin.contact_segments_manage.actions.contact_segments_manage';
+    public const ACTION = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage';
 
-    public const INVALID_SETUP = 'mautic.plugin.contact_segments_manage.actions.contact_segments_manage_validate_invalid_setup';
+    public const INVALID_SETUP = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_invalid_setup';
 
-    public const NON_EXISTING_LIST = 'mautic.plugin.contact_segments_manage.actions.contact_segments_manage_validate_non_existing_list';
+    public const NON_EXISTING_LIST = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_non_existing_list';
 
     private TranslatorInterface $translator;
 
