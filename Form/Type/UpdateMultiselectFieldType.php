@@ -31,7 +31,7 @@ class UpdateMultiselectFieldType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add(self::FIELD, ChoiceType::class, [
-            'label'         => 'mautic.plugin.multiselect_handling.action.managed_field',
+            'label'         => 'mautic.plugin.multiselect_handling.field_action.managed_field',
             'required'      => true,
             'choice_loader' => $this->leadFieldChoiceLoader,
             'constraints'   => [
@@ -44,7 +44,7 @@ class UpdateMultiselectFieldType extends AbstractType
             'multiple' => false,
             'expanded' => false,
         ])->add(self::ADD, ChoiceType::class, [
-            'label'         => 'mautic.plugin.multiselect_handling.action.multiselect_add',
+            'label'         => 'mautic.plugin.multiselect_handling.field_action.multiselect_add',
             'required'      => false,
             'choice_loader' => $this->leadFieldValuesChoiceLoader,
             'label_attr'    => ['class' => 'control-label'],
@@ -54,7 +54,7 @@ class UpdateMultiselectFieldType extends AbstractType
             'multiple' => true,
             'expanded' => false,
         ])->add(self::REMOVE, ChoiceType::class, [
-            'label'         => 'mautic.plugin.multiselect_handling.action.multiselect_remove',
+            'label'         => 'mautic.plugin.multiselect_handling.field_action.multiselect_remove',
             'required'      => false,
             'choice_loader' => $this->leadFieldValuesChoiceLoader,
             'label_attr'    => ['class' => 'control-label'],

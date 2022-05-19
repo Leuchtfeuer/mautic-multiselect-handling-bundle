@@ -3,7 +3,7 @@
 return [
     'name'        => 'Multiselect handle',
     'description' => 'Provides custom actions to manage multiselect fields.',
-    'version'     => '1.0.0',
+    'version'     => '1.1.0',
     'author'      => 'Leuchtfeuer',
     'services'    => [
         'other' => [
@@ -19,6 +19,13 @@ return [
                     'mautic.lead.repository.field',
                 ],
             ],
+            'mautic.plugin.multiselect_handling.model.segments' => [
+                'class'     => \MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel::class,
+                'arguments' => [
+                    'mautic.lead.model.list',
+                    'mautic.plugin.multiselect_handling.lead_field_choice_loader',
+                ],
+            ],
         ],
         'events' => [
             \MauticPlugin\MauticMultiselectHandlingBundle\EventListener\FormSubscriber::class => [
@@ -30,13 +37,14 @@ return [
                     'mautic.plugin.multiselect_handling.lead_field_choice_loader',
                     'translator',
                     'mautic.lead.model.lead',
-                    'mautic.lead.model.list',
+                    'mautic.plugin.multiselect_handling.model.segments',
                 ],
             ],
             \MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber::class => [
                 'class'     => \MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber::class,
                 'arguments' => [
                     'mautic.lead.model.lead',
+                    'mautic.plugin.multiselect_handling.model.segments',
                 ],
             ],
             \MauticPlugin\MauticMultiselectHandlingBundle\EventListener\CampaignSubscriber::class => [

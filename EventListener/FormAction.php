@@ -8,9 +8,11 @@ use Mautic\FormBundle\Event\SubmissionEvent;
 use Mautic\FormBundle\Exception\ValidationException;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
-use Mautic\LeadBundle\Model\ListModel;
+use MauticPlugin\MauticMultiselectHandlingBundle\Exception\InvalidSetupException;
+use MauticPlugin\MauticMultiselectHandlingBundle\Exception\NonExistingListException;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -28,14 +30,14 @@ class FormAction implements EventSubscriberInterface
 
     private LeadModel $leadModel;
 
-    private ListModel $listModel;
+    private SegmentsModel $segmentsModel;
 
-    public function __construct(LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, ListModel $listModel)
+    public function __construct(LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, SegmentsModel $segmentsModel)
     {
-        $this->choiceLoader = $choiceLoader;
-        $this->translator   = $translator;
-        $this->leadModel    = $leadModel;
-        $this->listModel    = $listModel;
+        $this->choiceLoader     = $choiceLoader;
+        $this->translator       = $translator;
+        $this->leadModel        = $leadModel;
+        $this->segmentsModel    = $segmentsModel;
     }
 
     /**
@@ -75,18 +77,14 @@ class FormAction implements EventSubscriberInterface
             $selectedSegments = [];
         }
 
-        $properties = $choices[0]->getProperties();
-        if (!isset($properties['list']) || !is_array($properties['list']) || 0 === count($properties['list'])) {
+        try {
+            if (null === $segmentsData = $this->segmentsModel->getSegments($actionProperties[SettingsType::FIELD], (bool) $actionProperties[SettingsType::CHECKBOX])) {
+                throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
+            }
+        } catch (InvalidSetupException $e) {
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
-        }
-
-        $segmentsSettings = [];
-        foreach ($properties['list'] as $property) {
-            $segmentsSettings[$property['value']] = $property['label'];
-        }
-
-        if (null === $segmentsData = $this->getSegments($segmentsSettings, (bool) $actionProperties[SettingsType::CHECKBOX])) {
-            throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
+        } catch (NonExistingListException $e) {
+            throw new ValidationException($this->translator->trans(self::NON_EXISTING_LIST));
         }
 
         /** @var LeadList[] $currentSegments */
@@ -134,43 +132,5 @@ class FormAction implements EventSubscriberInterface
         return [
             self::ACTION   => 'onAction',
         ];
-    }
-
-    /**
-     * @param array<string, string> $segmentsSettings
-     *
-     * @return array<int, string>|null
-     */
-    private function getSegments(array $segmentsSettings, bool $createNew): ?array
-    {
-        $segments = [];
-        foreach ($segmentsSettings as $segmentAlias => $segmentName) {
-            $segmentsData = $this->listModel->getUserLists($segmentAlias);
-
-            if (1 !== count($segmentsData)) {
-                if ($createNew) {
-                    $newSegment = new LeadList();
-                    $newSegment->setName($segmentName)
-                        ->setAlias($segmentAlias);
-
-                    $this->listModel->saveEntity($newSegment);
-                    $segments[$newSegment->getId()] = $newSegment->getAlias();
-
-                    continue;
-                }
-
-                throw new ValidationException($this->translator->trans(self::NON_EXISTING_LIST));
-            }
-
-            $segmentData = array_pop($segmentsData);
-
-            if (!is_array($segmentData) || !isset($segmentData['id'], $segmentData['alias'])) {
-                return null;
-            }
-
-            $segments[(int) $segmentData['id']] = $segmentData['alias'];
-        }
-
-        return $segments;
     }
 }
