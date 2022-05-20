@@ -14,7 +14,7 @@ use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class ContactSegmentsFunctionalTest extends MauticMysqlTestCase
+class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 {
     private LeadModel $leadModel;
 

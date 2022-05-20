@@ -20,6 +20,8 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
 {
     private LeadRepository $contactRepository;
 
+    protected $useCleanupRollback = false;
+
     private array $contacts = [
         [
             'email'     => 'contact1@email.com',
@@ -137,6 +139,24 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
             implode('|', ['other3', $this->fieldData[0]['alias'], $this->fieldData[1]['alias']]),
             $contactD->getFieldValue('manage_multiselect', 'core')
         );
+
+        // Cleanup
+        self::ensureKernelShutdown();
+        $this->setUpSymfony($this->configParams);
+
+        foreach ($contacts as $contactId) {
+            $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contactId.'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        }
+
+        $this->client->request(Request::METHOD_DELETE, '/api/campaigns/'.$campaign->getId().'/delete', []);
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
     }
 
     private function createMultiselectField(): int
@@ -214,7 +234,7 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
         $event = new Event();
         $event->setCampaign($campaign);
         $event->setName('Update multiselect');
-        $event->setType(ActionSubscriber::ACTION);
+        $event->setType(ActionSubscriber::MANAGE_FIELD_ACTION);
         $event->setEventType('action');
         $event->setTriggerMode('immediate');
         $event->setProperties([
