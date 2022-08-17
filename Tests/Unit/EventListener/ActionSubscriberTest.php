@@ -140,7 +140,7 @@ class ActionSubscriberTest extends TestCase
             ->with($lead);
         $leadModel->expects(self::once())
             ->method('setFieldValues')
-            ->with($lead, [$fieldAlias => $expectedFieldValues]);
+            ->with($lead, [$fieldAlias => $expectedFieldValues], true);
         $segmentsModel = $this->createMock(SegmentsModel::class);
         $segmentsModel->expects(self::never())
             ->method('getSegments');

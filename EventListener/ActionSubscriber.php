@@ -71,7 +71,7 @@ class ActionSubscriber implements EventSubscriberInterface
             unset($currentValue[$index]);
         }
 
-        $this->leadModel->setFieldValues($lead, [$field['alias'] => array_filter(array_values($currentValue))], false);
+        $this->leadModel->setFieldValues($lead, [$field['alias'] => array_filter(array_values($currentValue))], true);
         $this->leadModel->saveEntity($lead);
 
         $event->setResult(true); // for legacy event dispatcher
