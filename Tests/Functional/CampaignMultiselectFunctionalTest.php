@@ -46,6 +46,12 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
             'lastname'           => 'Dafis',
             'manage_multiselect' => ['field4', 'other3'],
         ],
+        [
+            'email'              => 'contact5@email.com',
+            'firstname'          => 'Grzegorz',
+            'lastname'           => 'Brzeczyszczykiewicz',
+            'manage_multiselect' => ['field4', 'field3'],
+        ],
     ];
 
     private array $fieldData = [
@@ -122,6 +128,8 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
         $contactC = $this->contactRepository->getEntity($contacts[2]);
         /** @var Lead $contactD */
         $contactD = $this->contactRepository->getEntity($contacts[3]);
+        /** @var Lead $contactE */
+        $contactE = $this->contactRepository->getEntity($contacts[4]);
 
         self::assertSame(
             implode('|', [$this->fieldData[0]['alias'], $this->fieldData[1]['alias']]),
@@ -138,6 +146,64 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
         self::assertSame(
             implode('|', ['other3', $this->fieldData[0]['alias'], $this->fieldData[1]['alias']]),
             $contactD->getFieldValue('manage_multiselect', 'core')
+        );
+        self::assertSame(
+            implode('|', [$this->fieldData[0]['alias'], $this->fieldData[1]['alias']]),
+            $contactE->getFieldValue('manage_multiselect', 'core')
+        );
+
+        // Cleanup
+        self::ensureKernelShutdown();
+        $this->setUpSymfony($this->configParams);
+
+        foreach ($contacts as $contactId) {
+            $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contactId.'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        }
+
+        $this->client->request(Request::METHOD_DELETE, '/api/campaigns/'.$campaign->getId().'/delete', []);
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+    }
+
+    public function testCompletelyRemoveValues(): void
+    {
+        $fieldId  = $this->createMultiselectField();
+        $contacts = $this->createContacts();
+        $campaign = $this->createCampaign(
+            [$contacts[4]],
+            $fieldId,
+            [],
+            [$fieldId.'-'.$this->fieldData[2]['alias'], $fieldId.'-'.$this->fieldData[3]['alias']]
+        );
+
+        $application = new Application(self::$kernel);
+        $application->setAutoExit(false);
+        $applicationTester = new ApplicationTester($application);
+
+        // Force Doctrine to re-fetch the entities otherwise the campaign won't know about any events.
+        $this->em->clear();
+
+        // Execute the campaign.
+        $exitCode = $applicationTester->run(
+            [
+                'command'       => 'mautic:campaigns:trigger',
+                '--campaign-id' => $campaign->getId(),
+            ]
+        );
+
+        self::assertSame(0, $exitCode, $applicationTester->getDisplay());
+
+        /** @var Lead $contactA */
+        $contactA = $this->contactRepository->getEntity($contacts[4]);
+
+        self::assertNull(
+            $contactA->getFieldValue('manage_multiselect', 'core')
         );
 
         // Cleanup
@@ -196,17 +262,19 @@ class CampaignMultiselectFunctionalTest extends MauticMysqlTestCase
         $response       = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertEquals(Response::HTTP_CREATED, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        self::assertCount(4, $response['statusCodes'], $clientResponse->getContent());
+        self::assertCount(5, $response['statusCodes'], $clientResponse->getContent());
         self::assertEquals(Response::HTTP_CREATED, $response['statusCodes'][0], $clientResponse->getContent());
         self::assertEquals(Response::HTTP_CREATED, $response['statusCodes'][1], $clientResponse->getContent());
         self::assertEquals(Response::HTTP_CREATED, $response['statusCodes'][2], $clientResponse->getContent());
         self::assertEquals(Response::HTTP_CREATED, $response['statusCodes'][3], $clientResponse->getContent());
+        self::assertEquals(Response::HTTP_CREATED, $response['statusCodes'][4], $clientResponse->getContent());
 
         return [
             $response['contacts'][0]['id'],
             $response['contacts'][1]['id'],
             $response['contacts'][2]['id'],
             $response['contacts'][3]['id'],
+            $response['contacts'][4]['id'],
         ];
     }
 
