@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FormSubscriber implements EventSubscriberInterface
 {
-    public const ACTION          = 'plugin.multiselectHandlingManageAction';
+    public const ACTION = 'plugin.multiselectHandlingManageAction';
 
     public static function getSubscribedEvents(): array
     {

@@ -40,7 +40,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
 
         $choices = [];
         foreach ($this->getFields() as $field) {
-            $choices[$field->getName()] = (string) $field->getId();
+            $choices[$field->getName().' ('.$field->getType().')'] = (string) $field->getId();
         }
 
         return $this->choiceList = new ArrayChoiceList($choices, $value);
@@ -148,7 +148,10 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
             return $this->fields;
         }
 
-        return $this->fields = $this->leadFieldRepository->getFieldsByType('multiselect');
+        return $this->fields = array_merge(
+            $this->leadFieldRepository->getFieldsByType('multiselect'),
+            $this->leadFieldRepository->getFieldsByType('select')
+        );
     }
 
     public function reset(): void

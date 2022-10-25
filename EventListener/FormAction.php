@@ -71,8 +71,12 @@ class FormAction implements EventSubscriberInterface
             return;
         }
 
-        // in case no checkboxes selected the value is ... string
         $selectedSegments = $contactFields[$actionMultiselectFieldAlias];
+        // if the field is single select the value is a string.
+        if (is_string($selectedSegments) && '' !== $selectedSegments) {
+            $selectedSegments = [$selectedSegments];
+        }
+        // in case no checkboxes selected the value is ... string
         if (!is_array($selectedSegments)) {
             $selectedSegments = [];
         }
