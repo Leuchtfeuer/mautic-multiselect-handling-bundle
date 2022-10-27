@@ -11,7 +11,7 @@ use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -23,7 +23,7 @@ class ActionSubscriberTest extends TestCase
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
             ->willReturn(false);
         $event->expects(self::never())
             ->method('getConfig');
@@ -46,7 +46,7 @@ class ActionSubscriberTest extends TestCase
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
             ->willReturn(true);
         $event->expects(self::once())
             ->method('getConfig')
@@ -80,11 +80,11 @@ class ActionSubscriberTest extends TestCase
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
             ->willReturn(true);
         $event->expects(self::once())
             ->method('getConfig')
-            ->willReturn(['other' => 'value', UpdateMultiselectFieldType::FIELD => $fieldId]);
+            ->willReturn(['other' => 'value', UpdateSelectFieldType::FIELD => $fieldId]);
         $event->expects(self::once())
             ->method('getLead')
             ->willReturn($lead);
@@ -120,15 +120,15 @@ class ActionSubscriberTest extends TestCase
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
             ->willReturn(true);
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn([
-                'other'                            => 'value',
-                UpdateMultiselectFieldType::FIELD  => $fieldId,
-                UpdateMultiselectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
-                UpdateMultiselectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
+                'other'                       => 'value',
+                UpdateSelectFieldType::FIELD  => $fieldId,
+                UpdateSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
+                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
             ]);
         $event->expects(self::once())
             ->method('getLead')
@@ -468,8 +468,8 @@ class ActionSubscriberTest extends TestCase
     public function testSubscribedEvents(): void
     {
         self::assertSame([
-            ActionSubscriber::MANAGE_FIELD_EVENT    => 'onManageFieldAction',
-            ActionSubscriber::MANAGE_SEGMENTS_EVENT => 'onManageSegmentsAction',
+            ActionSubscriber::MANAGE_MULTISELECT_FIELD_EVENT => 'onManageFieldAction',
+            ActionSubscriber::MANAGE_SEGMENTS_EVENT          => 'onManageSegmentsAction',
         ], ActionSubscriber::getSubscribedEvents());
     }
 }

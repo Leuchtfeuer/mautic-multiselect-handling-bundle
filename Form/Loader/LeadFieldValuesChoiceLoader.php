@@ -23,6 +23,8 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
      */
     private array $fields = [];
 
+    private ?bool $loadMultiSelect = null;
+
     public function __construct(LeadFieldRepository $leadFieldRepository)
     {
         $this->leadFieldRepository = $leadFieldRepository;
@@ -71,6 +73,10 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
             }
 
             $fieldIds[$idAndAlias['id']] = true;
+        }
+
+        if (0 === count($fieldIds)) {
+            return [];
         }
 
         $valuesById = [];
@@ -137,7 +143,18 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
             return $this->fields;
         }
 
-        return $this->fields = $this->leadFieldRepository->getFieldsByType('multiselect');
+        if (null === $this->loadMultiSelect) {
+            return $this->fields = array_merge(
+                $this->leadFieldRepository->getFieldsByType('multiselect'),
+                $this->leadFieldRepository->getFieldsByType('select')
+            );
+        }
+
+        if (true === $this->loadMultiSelect) {
+            return $this->fields = $this->leadFieldRepository->getFieldsByType('multiselect');
+        }
+
+        return $this->fields = $this->leadFieldRepository->getFieldsByType('select');
     }
 
     /**
@@ -168,10 +185,14 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     }
 
     /**
-     * @return array{id: int, alias: string}
+     * @return array{id?: int, alias?: string}
      */
     private function extractIdAndAlias(string $value): array
     {
+        if ('' === $value) {
+            return [];
+        }
+
         $idAndAlias = explode('-', $value);
 
         if (2 !== count($idAndAlias) || !is_numeric($idAndAlias[0])) {
@@ -185,5 +206,10 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     {
         $this->choiceList = null;
         $this->fields     = [];
+    }
+
+    public function setType(bool $multiple): void
+    {
+        $this->loadMultiSelect = $multiple;
     }
 }

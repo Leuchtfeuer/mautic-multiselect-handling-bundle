@@ -59,7 +59,7 @@ return [
                 ],
             ],
             'mautic.plugin.multiselect_handling.update_multiselect_field_type' => [
-                'class'     => \MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType::class,
+                'class'     => \MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType::class,
                 'arguments' => [
                     'mautic.plugin.multiselect_handling.lead_field_choice_loader',
                     'mautic.plugin.multiselect_handling.lead_field_values_choice_loader',

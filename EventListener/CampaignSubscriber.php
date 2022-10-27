@@ -7,7 +7,7 @@ namespace MauticPlugin\MauticMultiselectHandlingBundle\EventListener;
 use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CampaignSubscriber implements EventSubscriberInterface
@@ -15,13 +15,28 @@ class CampaignSubscriber implements EventSubscriberInterface
     public function onCampaignBuild(CampaignBuilderEvent $event): void
     {
         $action = [
-            'label'       => 'plugin.multiselect_handling.field_action.label',
-            'description' => 'plugin.multiselect_handling.field_action.description',
-            'formType'    => UpdateMultiselectFieldType::class,
-            'eventName'   => ActionSubscriber::MANAGE_FIELD_EVENT,
+            'label'           => 'plugin.multiselect_handling.multiselect_field_action.label',
+            'description'     => 'plugin.multiselect_handling.multiselect_field_action.description',
+            'formType'        => UpdateSelectFieldType::class,
+            'formTypeOptions' => [
+                'multiple' => true,
+            ],
+            'eventName'   => ActionSubscriber::MANAGE_MULTISELECT_FIELD_EVENT,
         ];
 
-        $event->addAction(ActionSubscriber::MANAGE_FIELD_ACTION, $action);
+        $event->addAction(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION, $action);
+
+        $action = [
+            'label'           => 'plugin.multiselect_handling.select_field_action.label',
+            'description'     => 'plugin.multiselect_handling.select_field_action.description',
+            'formType'        => UpdateSelectFieldType::class,
+            'formTypeOptions' => [
+                'multiple' => false,
+            ],
+            'eventName'   => ActionSubscriber::MANAGE_SELECT_FIELD_EVENT,
+        ];
+
+        $event->addAction(ActionSubscriber::MANAGE_SELECT_FIELD_ACTION, $action);
 
         $action = [
             'label'       => 'plugin.multiselect_handling.segment_action.label',
