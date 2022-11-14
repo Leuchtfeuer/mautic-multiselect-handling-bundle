@@ -68,7 +68,7 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
         foreach ($values as $possibleValue) {
             $idAndAlias = $this->extractIdAndAlias($possibleValue);
 
-            if (isset($fieldIds[$idAndAlias['id']])) {
+            if (!isset($idAndAlias['id']) || isset($fieldIds[$idAndAlias['id']])) {
                 continue;
             }
 

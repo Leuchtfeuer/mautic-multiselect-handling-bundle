@@ -186,6 +186,63 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         self::assertSame($values, $leadFieldChoiceLoader->loadChoicesForValues($values));
     }
 
+    public function testLoadChoicesSkipsEmptyValues(): void
+    {
+        $fieldId  = 11;
+        $fieldId2 = 22;
+
+        $values     = ['22-field_2_value_1', '22-field_2_value_2', '11-field_1_value_1', '11-field_1_value_non_existing_anymore', ''];
+        $leadField1 = $this->createMock(LeadField::class);
+        $leadField1->expects(self::once())
+            ->method('getId')
+            ->willReturn($fieldId);
+        $leadField1->expects(self::never())
+            ->method('getName');
+        $leadField1->expects(self::once())
+            ->method('getProperties')
+            ->willReturn([
+                'list' => [[
+                    'label' => 'Field 1 Value 1',
+                    'value' => 'field_1_value_1',
+                ], [
+                    'label' => 'Field 1 Value 2',
+                    'value' => 'field_1_value_2',
+                ]],
+            ]);
+
+        $leadField2 = $this->createMock(LeadField::class);
+        $leadField2->expects(self::once())
+            ->method('getId')
+            ->willReturn($fieldId2);
+        $leadField2->expects(self::never())
+            ->method('getName');
+        $leadField2->expects(self::once())
+            ->method('getProperties')
+            ->willReturn([
+                'list' => [[
+                    'label' => 'Field 2 Value 1',
+                    'value' => 'field_2_value_1',
+                ], [
+                    'label' => 'Field 2 Value 2',
+                    'value' => 'field_2_value_2',
+                ], [
+                    'label' => 'Field 2 Value 3',
+                    'value' => 'field_2_value_3',
+                ]],
+            ]);
+
+        $leadFieldRepository = $this->createMock(LeadFieldRepository::class);
+        $leadFieldRepository->expects(self::once())
+            ->method('getEntities')
+            ->with(['ids' => [$fieldId2, $fieldId]])
+            ->willReturn([$leadField1, $leadField2]);
+
+        $leadFieldChoiceLoader = new LeadFieldValuesChoiceLoader($leadFieldRepository);
+
+        unset($values[3], $values[4]);
+        self::assertSame($values, $leadFieldChoiceLoader->loadChoicesForValues($values));
+    }
+
     public function testLoadChoicesThrowsOnInvalidValues(): void
     {
         $values              = ['22-field_2_value_1', '22-field_2_value_2', '11-field_1_value_1', '11-field_1_value_non_existing_anymore', '55invalid'];
