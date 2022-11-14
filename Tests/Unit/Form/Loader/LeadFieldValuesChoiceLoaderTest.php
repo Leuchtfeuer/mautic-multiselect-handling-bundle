@@ -186,6 +186,22 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         self::assertSame($values, $leadFieldChoiceLoader->loadChoicesForValues($values));
     }
 
+    public function testLoadChoicesThrowsOnInvalidValues(): void
+    {
+        $values              = ['22-field_2_value_1', '22-field_2_value_2', '11-field_1_value_1', '11-field_1_value_non_existing_anymore', '55invalid'];
+        $leadFieldRepository = $this->createMock(LeadFieldRepository::class);
+        $leadFieldRepository->expects(self::never())
+            ->method('getEntities');
+
+        $leadFieldChoiceLoader = new LeadFieldValuesChoiceLoader($leadFieldRepository);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('There is something wrong with the field alias.');
+        $leadFieldChoiceLoader->loadChoicesForValues($values);
+
+        self::fail('After exception');
+    }
+
     public function testLoadChoicesForEmptyValuesExpectsProperAlias(): void
     {
         $values = ['22-field_2_value_1-error', '22-field_2_value_2', '11-field_1_value_1', '11-field_1_value_non_existing_anymore'];

@@ -60,7 +60,7 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
      */
     public function loadChoicesForValues(array $values, $value = null): array
     {
-        if (empty($values)) {
+        if ([] === $values) {
             return [];
         }
 

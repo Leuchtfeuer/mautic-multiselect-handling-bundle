@@ -31,12 +31,17 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
         ];
         foreach ($fields as $key => $item) {
             if (isset($value['properties'][$key])) {
-                if (is_string($value['properties'][$key]) && '' !== $value['properties'][$key]) {
-                    $fields[$key] = [$value['properties'][$key]];
+                if (is_string($value['properties'][$key])) {
+                    if ('' !== $value['properties'][$key]) {
+                        $fields[$key] = [$value['properties'][$key]];
+                    } else {
+                        $fields[$key] = [];
+                    }
+
                     continue;
                 }
 
-                if (is_array($value['properties'][$key]) && [] !== $value['properties'][$key]) {
+                if (is_array($value['properties'][$key])) {
                     $fields[$key] = $value['properties'][$key];
                     continue;
                 }
