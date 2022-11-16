@@ -487,7 +487,7 @@ class FormActionTest extends TestCase
         $formAction->onAction($event);
     }
 
-    public function testOnActionManagesSegments(): void
+    public function testOnActionManagesSegmentsFromMultiselect(): void
     {
         $leadFieldChoiceLoader        = $this->createMock(LeadFieldChoiceLoader::class);
         $translator                   = $this->createMock(TranslatorInterface::class);
@@ -585,6 +585,105 @@ class FormActionTest extends TestCase
         $leadModel->expects(self::once())
             ->method('addToLists')
             ->with($lead, [$segmentId, $createdSegmentId]);
+
+        $formAction = new FormAction($leadFieldChoiceLoader, $translator, $leadModel, $segmentsModel);
+        $formAction->onAction($event);
+    }
+
+    public function testOnActionManagesSegmentsFromSelect(): void
+    {
+        $leadFieldChoiceLoader        = $this->createMock(LeadFieldChoiceLoader::class);
+        $translator                   = $this->createMock(TranslatorInterface::class);
+        $leadModel                    = $this->createMock(LeadModel::class);
+        $segmentsModel                = $this->createMock(SegmentsModel::class);
+        $event                        = $this->createMock(SubmissionEvent::class);
+        $action                       = $this->createMock(Action::class);
+        $lead                         = $this->createMock(Lead::class);
+        $leadField                    = $this->createMock(LeadField::class);
+        $leadFieldAlias               = 'field_alias';
+        $fieldId                      = 2333;
+        $actionProperties             = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '1'];
+        $segmentAlias                 = 'segment_alias';
+        $segmentId                    = '112';
+        $existingSegmentId            = '441';
+        $existingSegmentAlias         = 'existing_segment';
+        $existingSegment              = $this->createMock(LeadList::class);
+        $createdSegmentId             = 3737;
+        $createSegmentAlias           = 'create_segment_alias';
+        $removeSegmentId              = 74747;
+        $removeSegmentAlias           = 'remove_alias';
+        $removeSegment                = $this->createMock(LeadList::class);
+        $otherSegment                 = $this->createMock(LeadList::class);
+
+        $event->expects(self::once())
+            ->method('checkContext')
+            ->with(FormSubscriber::ACTION)
+            ->willReturn(true);
+        $event->expects(self::once())
+            ->method('getContactFieldMatches')
+            ->willReturn([$leadFieldAlias => $segmentAlias]);
+
+        $event->expects(self::once())
+            ->method('getAction')
+            ->willReturn($action);
+        $event->expects(self::once())
+            ->method('getLead')
+            ->willReturn($lead);
+
+        $action->expects(self::once())
+            ->method('getProperties')
+            ->willReturn($actionProperties);
+
+        $leadFieldChoiceLoader->expects(self::once())
+            ->method('loadFieldsForChoices')
+            ->with([$fieldId])
+            ->willReturn([$leadField]);
+
+        $leadField->expects(self::once())
+            ->method('getAlias')
+            ->willReturn($leadFieldAlias);
+
+        $translator->expects(self::never())
+            ->method('trans');
+
+        $segmentsModel->expects(self::once())
+            ->method('getSegments')
+            ->with($fieldId, true)
+            ->willReturn([
+                $segmentId         => $segmentAlias,
+                $createdSegmentId  => $createSegmentAlias,
+                $existingSegmentId => $existingSegmentAlias,
+                $removeSegmentId   => $removeSegmentAlias,
+            ]);
+
+        $existingSegment->expects(self::once())
+            ->method('getId')
+            ->willReturn($existingSegmentId);
+        $existingSegment->expects(self::once())
+            ->method('getAlias')
+            ->willReturn($existingSegmentAlias);
+
+        $removeSegment->expects(self::once())
+            ->method('getId')
+            ->willReturn($removeSegmentId);
+        $removeSegment->expects(self::once())
+            ->method('getAlias')
+            ->willReturn($removeSegmentAlias);
+
+        $otherSegment->expects(self::once())
+            ->method('getId')
+            ->willReturn(8881111);
+
+        $leadModel->expects(self::once())
+            ->method('getLists')
+            ->with($lead)
+            ->willReturn([$existingSegment, $otherSegment, $removeSegment]);
+        $leadModel->expects(self::once())
+            ->method('removeFromLists')
+            ->with($lead, [$existingSegmentId, $removeSegmentId]);
+        $leadModel->expects(self::once())
+            ->method('addToLists')
+            ->with($lead, [$segmentId]);
 
         $formAction = new FormAction($leadFieldChoiceLoader, $translator, $leadModel, $segmentsModel);
         $formAction->onAction($event);

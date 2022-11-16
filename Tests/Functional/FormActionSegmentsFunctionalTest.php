@@ -48,6 +48,13 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    private array $created = [
+        'segments'      => [],
+        'contact'       => null,
+        'contact_field' => null,
+        'form'          => null,
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -62,6 +69,37 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
     {
         $tablePrefix = self::$container->getParameter('mautic.db_table_prefix');
 
+        // Cleanup
+        self::ensureKernelShutdown();
+        $this->setUpSymfony($this->configParams);
+        if (null !== $this->created['contact']) {
+            $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$this->created['contact']['id'].'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            $this->created['contact'] = null;
+        }
+
+        foreach ($this->created['segments'] as $segment) {
+            $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        }
+        $this->created['segments'] = [];
+
+        if (null !== $this->created['form']) {
+            $this->client->request(Request::METHOD_DELETE, '/api/forms/'.$this->created['form'].'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            $this->created['form'] = null;
+        }
+
+        if (null !== $this->created['contact_field']) {
+            $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$this->created['contact_field'].'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            $this->created['contact_field'] = null;
+        }
+
         parent::tearDown();
 
         if ($this->connection->getSchemaManager()->tablesExist("{$tablePrefix}form_results_1_submission")) {
@@ -69,21 +107,20 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         }
     }
 
-    public function testFunctionalWithoutCreatingMissing(): void
+    public function testFunctionalMultiSelectWithoutCreatingMissing(): void
     {
-        $selectedSegments = $segments = $this->createSegments();
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
         unset($selectedSegments[1]);
-        $fieldId = $this->testCreateMultiselectField($selectedSegments);
-        $contact = $this->createContact();
-        $formId  = $this->createForm($fieldId, false);
+        $fieldId = $this->created['contact_field'] = $this->testCreateMultiselectField($selectedSegments);
+        $contact = $this->created['contact'] = $this->createContact();
+        $formId  = $this->created['form'] = $this->createForm($fieldId, false, true);
 
         $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
 
         $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
         $formCrawler = $crawler->filter('form[id=mauticform_submissiontestform]');
         self::assertCount(1, $formCrawler, (string) $this->client->getResponse()->getContent());
-        $form = $formCrawler->form();
-        $form->setValues([
+        $form = $formCrawler->form([
             'mauticform[email]'           => $contact['fields']['core']['email']['value'],
             'mauticform[select_segments]' => [$segments[0]['alias'], $segments[2]['alias']],
         ]);
@@ -110,38 +147,17 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         self::assertSame($segments[1]['id'], $list->getId());
         $list = array_pop($lists);
         self::assertSame($segments[0]['id'], $list->getId());
-
-        // Cleanup
-        self::ensureKernelShutdown();
-        $this->setUpSymfony($this->configParams);
-        $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contact['id'].'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        foreach ($segments as $segment) {
-            $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
-            $clientResponse = $this->client->getResponse();
-            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        }
-
-        $this->client->request(Request::METHOD_DELETE, '/api/forms/'.$formId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
     }
 
-    public function testFunctionalWithCreatingMissing(): void
+    public function testFunctionalMultiselectWithCreatingMissing(): void
     {
-        $selectedSegments = $segments = $this->createSegments();
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
         unset($selectedSegments[1]);
         $createdSegmentName  = 'Created segment name';
         $createdSegmentAlias = 'createdsegmentname';
-        $fieldId             = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]));
-        $contact             = $this->createContact();
-        $formId              = $this->createForm($fieldId, true);
+        $fieldId             = $this->created['contact_field'] = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]));
+        $contact             = $this->created['contact'] = $this->createContact();
+        $formId              = $this->created['form'] = $this->createForm($fieldId, true, true);
 
         $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
 
@@ -180,37 +196,16 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         self::assertSame($segments[1]['id'], $list->getId());
         $list = array_pop($lists);
         self::assertSame($segments[0]['id'], $list->getId());
-
-        // Cleanup
-        self::ensureKernelShutdown();
-        $this->setUpSymfony($this->configParams);
-        $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contact['id'].'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        foreach ($segments as $segment) {
-            $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
-            $clientResponse = $this->client->getResponse();
-            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        }
-
-        $this->client->request(Request::METHOD_DELETE, '/api/forms/'.$formId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
     }
 
-    public function testFunctionalWithoutCreatingMissingButMissingSegment(): void
+    public function testFunctionalMultiselectWithoutCreatingMissingButMissingSegment(): void
     {
-        $selectedSegments = $segments = $this->createSegments();
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
         unset($selectedSegments[1]);
         $createdSegmentAlias = 'createdsegmentname';
-        $fieldId             = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
-        $contact             = $this->createContact();
-        $formId              = $this->createForm($fieldId, false);
+        $fieldId             = $this->created['contact_field'] = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
+        $contact             = $this->created['contact'] = $this->createContact();
+        $formId              = $this->created['form'] = $this->createForm($fieldId, false, true);
 
         $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
 
@@ -246,30 +241,139 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         self::assertSame($segments[1]['id'], $list->getId());
         $list = array_pop($lists);
         self::assertSame($segments[0]['id'], $list->getId());
-
-        // Cleanup
-        self::ensureKernelShutdown();
-        $this->setUpSymfony($this->configParams);
-        $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contact['id'].'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        foreach ($segments as $segment) {
-            $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
-            $clientResponse = $this->client->getResponse();
-            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        }
-
-        $this->client->request(Request::METHOD_DELETE, '/api/forms/'.$formId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
     }
 
-    private function createForm(int $fieldId, bool $createMissing): int
+    public function testFunctionalSingleSelectWithoutCreatingMissing(): void
+    {
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        unset($selectedSegments[1]);
+        $fieldId = $this->created['contact_field'] = $this->testCreateSingleSelectField($selectedSegments);
+        $contact = $this->created['contact'] = $this->createContact();
+        $formId  = $this->created['form'] = $this->createForm($fieldId, false, false);
+
+        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
+
+        $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
+        $formCrawler = $crawler->filter('form[id=mauticform_submissiontestform]');
+        self::assertCount(1, $formCrawler, (string) $this->client->getResponse()->getContent());
+        $form = $formCrawler->form([
+            'mauticform[email]'           => $contact['fields']['core']['email']['value'],
+            'mauticform[select_segments]' => $segments[0]['alias'],
+        ]);
+        $this->client->submit($form);
+
+        $clientResponse = $this->client->getResponse();
+
+        self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        self::assertSame('https://localhost/form/'.$formId, $clientResponse->headers->get('Location'));
+        $this->client->followRedirect();
+
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contact['id']);
+
+        self::assertCount(2, $lists);
+        $list = array_pop($lists);
+        self::assertSame($segments[1]['id'], $list->getId());
+        $list = array_pop($lists);
+        self::assertSame($segments[0]['id'], $list->getId());
+    }
+
+    public function testFunctionalSingleSelectWithCreatingMissing(): void
+    {
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        unset($selectedSegments[1]);
+        $createdSegmentName  = 'Created segment name';
+        $createdSegmentAlias = 'createdsegmentname';
+        $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]));
+        $contact             = $this->created['contact'] = $this->createContact();
+        $formId              = $this->created['form'] = $this->createForm($fieldId, true, false);
+
+        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
+
+        $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
+        $formCrawler = $crawler->filter('form[id=mauticform_submissiontestform]');
+        self::assertCount(1, $formCrawler, (string) $this->client->getResponse()->getContent());
+        $form = $formCrawler->form();
+        $form->disableValidation();
+        $form->setValues([
+            'mauticform[email]'           => $contact['fields']['core']['email']['value'],
+            'mauticform[select_segments]' => $createdSegmentAlias,
+        ]);
+        $this->client->submit($form);
+
+        $clientResponse = $this->client->getResponse();
+
+        self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        self::assertSame('https://localhost/form/'.$formId, $clientResponse->headers->get('Location'));
+        $this->client->followRedirect();
+
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contact['id']);
+
+        self::assertCount(2, $lists);
+        $list = array_pop($lists);
+        self::assertSame($createdSegmentName, $list->getName());
+        self::assertSame($createdSegmentAlias, $list->getAlias());
+        $list = array_pop($lists);
+        self::assertSame($segments[1]['id'], $list->getId());
+    }
+
+    public function testFunctionalSingleSelectWithoutCreatingMissingButMissingSegment(): void
+    {
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        unset($selectedSegments[1]);
+        $createdSegmentAlias = 'createdsegmentname';
+        $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
+        $contact             = $this->created['contact'] = $this->createContact();
+        $formId              = $this->created['form'] = $this->createForm($fieldId, false, false);
+
+        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
+
+        $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
+        $formCrawler = $crawler->filter('form[id=mauticform_submissiontestform]');
+        self::assertCount(1, $formCrawler, (string) $this->client->getResponse()->getContent());
+        $form = $formCrawler->form();
+        $form->disableValidation();
+        $form->setValues([
+            'mauticform[email]'           => $contact['fields']['core']['email']['value'],
+            'mauticform[select_segments]' => $createdSegmentAlias,
+        ]);
+        $this->client->submit($form);
+
+        $clientResponse = $this->client->getResponse();
+
+        self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        self::assertSame('https://localhost/form/'.$formId.'?mauticError=Errors%3A%3Cbr%20%2F%3E%3Col%3E%3Cli%3EGiven%20list%20does%20not%20exist.%3C%2Fli%3E%3C%2Fol%3E#submission', $clientResponse->headers->get('Location'));
+        $this->client->followRedirect();
+
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contact['id']);
+
+        self::assertCount(3, $lists);
+        $list = array_pop($lists);
+        self::assertSame($segments[3]['id'], $list->getId());
+        $list = array_pop($lists);
+        self::assertSame($segments[1]['id'], $list->getId());
+        $list = array_pop($lists);
+        self::assertSame($segments[0]['id'], $list->getId());
+    }
+
+    private function createForm(int $fieldId, bool $createMissing, bool $multiSelect): int
     {
         $payload = [
             'name'        => 'Submission test form',
@@ -285,7 +389,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
                 ],
                 [
                     'label'      => 'Select segments',
-                    'type'       => 'checkboxgrp',
+                    'type'       => $multiSelect ? 'checkboxgrp' : 'radiogrp',
                     'alias'      => 'select_segments',
                     'leadField'  => 'manage_segments',
                     'properties' => [
@@ -331,6 +435,33 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
             'label'               => 'Manage segments',
             'alias'               => 'manage_segments',
             'type'                => 'multiselect',
+            'isPubliclyUpdatable' => true,
+            'isUniqueIdentifier'  => false,
+            'properties'          => [
+                'list' => $list,
+            ],
+        ];
+
+        $this->client->request(Request::METHOD_POST, '/api/fields/contact/new', $payload);
+        $clientResponse = $this->client->getResponse();
+        $fieldResponse  = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(Response::HTTP_CREATED, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        return $fieldResponse['field']['id'];
+    }
+
+    private function testCreateSingleSelectField(array $segments)
+    {
+        $list = [];
+        foreach ($segments as $segment) {
+            $list[] = ['label' => $segment['name'], 'value' => $segment['alias']];
+        }
+
+        $payload = [
+            'label'               => 'Manage segments',
+            'alias'               => 'manage_segments',
+            'type'                => 'select',
             'isPubliclyUpdatable' => true,
             'isUniqueIdentifier'  => false,
             'properties'          => [

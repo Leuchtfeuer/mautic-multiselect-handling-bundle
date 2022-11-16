@@ -65,14 +65,18 @@ class FormAction implements EventSubscriberInterface
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
         }
 
-        $contactFields               = $event->getContactFieldMatches();
-        $actionMultiselectFieldAlias = $choices[0]->getAlias();
-        if (!isset($contactFields[$actionMultiselectFieldAlias])) {
+        $contactFields          = $event->getContactFieldMatches();
+        $actionSelectFieldAlias = $choices[0]->getAlias();
+        if (!isset($contactFields[$actionSelectFieldAlias])) {
             return;
         }
 
+        $selectedSegments = $contactFields[$actionSelectFieldAlias];
+        // if the field is single select the value is a string.
+        if (is_string($selectedSegments) && '' !== $selectedSegments) {
+            $selectedSegments = [$selectedSegments];
+        }
         // in case no checkboxes selected the value is ... string
-        $selectedSegments = $contactFields[$actionMultiselectFieldAlias];
         if (!is_array($selectedSegments)) {
             $selectedSegments = [];
         }

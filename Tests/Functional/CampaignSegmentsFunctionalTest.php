@@ -23,6 +23,8 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 {
     private LeadModel $leadModel;
 
+    private const FIELD_NAME = 'test_field';
+
     protected $useCleanupRollback = false;
 
     private array $contacts = [
@@ -56,6 +58,17 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<int, array<int, mixed>>|null
+     */
+    private ?array $createdSegments = null;
+
+    private ?int $contactId = null;
+
+    private ?int $campaignId = null;
+
+    private ?int $fieldId = null;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -63,17 +76,57 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->leadModel = self::$container->get(LeadModel::class);
     }
 
-    public function testFunctionalWithoutCreatingMissing(): void
+    protected function tearDown(): void
     {
-        $selectedSegments = $segments = $this->createSegments();
+        // Cleanup
+        self::ensureKernelShutdown();
+        $this->setUpSymfony($this->configParams);
+
+        if (null !== $this->contactId) {
+            $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$this->contactId.'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            $this->contactId = null;
+        }
+
+        if (null !== $this->createdSegments) {
+            foreach ($this->createdSegments as $segment) {
+                $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
+                $clientResponse = $this->client->getResponse();
+                self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            }
+            $this->createdSegments = null;
+        }
+
+        if (null !== $this->campaignId) {
+            $this->client->request(Request::METHOD_DELETE, '/api/campaigns/'.$this->campaignId.'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            $this->campaignId = null;
+        }
+
+        if (null !== $this->fieldId) {
+            $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$this->fieldId.'/delete', []);
+            $clientResponse = $this->client->getResponse();
+            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+            $this->fieldId = null;
+        }
+
+        parent::tearDown();
+    }
+
+    public function testFunctionalMultiselectWithoutCreatingMissing(): void
+    {
+        $selectedSegments = $segments = $this->createdSegments = $this->createSegments();
         unset($selectedSegments[4]);
-        $fieldId = $this->testCreateMultiselectField($selectedSegments);
+        $fieldId = $this->fieldId = $this->testCreateSelectField($selectedSegments, true);
 
-        $this->contacts[0]['manage_segments'] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias']];
-        $contact                              = $this->createContact();
-        $campaign                             = $this->createCampaign($contact['id'], $fieldId, false);
+        $this->contacts[0][self::FIELD_NAME] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias']];
+        $contactId                           = $this->contactId = $this->createContact();
+        $campaign                            = $this->createCampaign($contactId, $fieldId, false);
+        $this->campaignId                    = $campaign->getId();
 
-        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[3]['id']]);
+        $this->leadModel->addToLists(['id' => $contactId], [$segments[0]['id'], $segments[3]['id']]);
 
         $application = new Application(self::$kernel);
         $application->setAutoExit(false);
@@ -95,49 +148,27 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         /** @var LeadListRepository $leadListRepository */
         $leadListRepository = $this->leadModel->getLeadListRepository();
         /** @var LeadList[] $lists */
-        $lists = $leadListRepository->getLeadLists($contact['id']);
+        $lists = $leadListRepository->getLeadLists($contactId);
 
         self::assertCount(2, $lists);
         $list = array_pop($lists);
         self::assertSame($segments[1]['id'], $list->getId());
         $list = array_pop($lists);
         self::assertSame($segments[0]['id'], $list->getId());
-
-        // Cleanup
-        self::ensureKernelShutdown();
-        $this->setUpSymfony($this->configParams);
-        $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contact['id'].'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        foreach ($segments as $segment) {
-            $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
-            $clientResponse = $this->client->getResponse();
-            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        }
-
-        $this->client->request(Request::METHOD_DELETE, '/api/campaigns/'.$campaign->getId().'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-
-        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
     }
 
-    public function testFunctionalWithCreatingMissing(): void
+    public function testFunctionalSelectWithoutCreatingMissing(): void
     {
-        $selectedSegments = $segments = $this->createSegments();
+        $selectedSegments = $segments = $this->createdSegments = $this->createSegments();
         unset($selectedSegments[4]);
-        $createdSegmentName  = 'Created segment name';
-        $createdSegmentAlias = 'createdsegmentname';
-        $fieldId             = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]));
+        $fieldId = $this->fieldId = $this->testCreateSelectField($selectedSegments, false);
 
-        $this->contacts[0]['manage_segments'] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias'], $createdSegmentAlias];
-        $contact                              = $this->createContact();
-        $campaign                             = $this->createCampaign($contact['id'], $fieldId, true);
+        $this->contacts[0][self::FIELD_NAME] = $selectedSegments[1]['alias'];
+        $contactId                           = $this->contactId = $this->createContact();
+        $campaign                            = $this->createCampaign($contactId, $fieldId, false);
+        $this->campaignId                    = $campaign->getId();
 
-        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[3]['id']]);
+        $this->leadModel->addToLists(['id' => $contactId], [$segments[0]['id'], $segments[3]['id']]);
 
         $application = new Application(self::$kernel);
         $application->setAutoExit(false);
@@ -159,7 +190,49 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         /** @var LeadListRepository $leadListRepository */
         $leadListRepository = $this->leadModel->getLeadListRepository();
         /** @var LeadList[] $lists */
-        $lists = $leadListRepository->getLeadLists($contact['id']);
+        $lists = $leadListRepository->getLeadLists($contactId);
+
+        self::assertCount(1, $lists);
+        $list = array_pop($lists);
+        self::assertSame($segments[1]['id'], $list->getId());
+    }
+
+    public function testFunctionalMultiselectWithCreatingMissing(): void
+    {
+        $selectedSegments = $segments = $this->createdSegments = $this->createSegments();
+        unset($selectedSegments[4]);
+        $createdSegmentName  = 'Created segment name';
+        $createdSegmentAlias = 'createdsegmentname';
+        $fieldId             = $this->fieldId = $this->testCreateSelectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]), true);
+
+        $this->contacts[0][self::FIELD_NAME] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias'], $createdSegmentAlias];
+        $contactId                           = $this->contactId = $this->createContact();
+        $campaign                            = $this->createCampaign($contactId, $fieldId, true);
+        $this->campaignId                    = $campaign->getId();
+
+        $this->leadModel->addToLists(['id' => $contactId], [$segments[0]['id'], $segments[3]['id']]);
+
+        $application = new Application(self::$kernel);
+        $application->setAutoExit(false);
+        $applicationTester = new ApplicationTester($application);
+
+        // Force Doctrine to re-fetch the entities otherwise the campaign won't know about any events.
+        $this->em->clear();
+
+        // Execute the campaign.
+        $exitCode = $applicationTester->run(
+            [
+                'command'       => 'mautic:campaigns:trigger',
+                '--campaign-id' => $campaign->getId(),
+            ]
+        );
+
+        self::assertSame(0, $exitCode, $applicationTester->getDisplay());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contactId);
 
         self::assertCount(3, $lists);
         $list = array_pop($lists);
@@ -169,27 +242,49 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         self::assertSame($segments[1]['id'], $list->getId());
         $list = array_pop($lists);
         self::assertSame($segments[0]['id'], $list->getId());
+    }
 
-        // Cleanup
-        self::ensureKernelShutdown();
-        $this->setUpSymfony($this->configParams);
-        $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contact['id'].'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+    public function testFunctionalSelectWithCreatingMissing(): void
+    {
+        $selectedSegments = $segments = $this->createdSegments = $this->createSegments();
+        unset($selectedSegments[4]);
+        $createdSegmentName  = 'Created segment name';
+        $createdSegmentAlias = 'createdsegmentname';
+        $fieldId             = $this->fieldId = $this->testCreateSelectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]), true);
 
-        foreach ($segments as $segment) {
-            $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
-            $clientResponse = $this->client->getResponse();
-            self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        }
+        $this->contacts[0][self::FIELD_NAME] = $createdSegmentAlias;
+        $contactId                           = $this->contactId = $this->createContact();
+        $campaign                            = $this->createCampaign($contactId, $fieldId, true);
+        $this->campaignId                    = $campaign->getId();
 
-        $this->client->request(Request::METHOD_DELETE, '/api/campaigns/'.$campaign->getId().'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        $this->leadModel->addToLists(['id' => $contactId], [$segments[0]['id'], $segments[3]['id']]);
 
-        $this->client->request(Request::METHOD_DELETE, '/api/fields/contact/'.$fieldId.'/delete', []);
-        $clientResponse = $this->client->getResponse();
-        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        $application = new Application(self::$kernel);
+        $application->setAutoExit(false);
+        $applicationTester = new ApplicationTester($application);
+
+        // Force Doctrine to re-fetch the entities otherwise the campaign won't know about any events.
+        $this->em->clear();
+
+        // Execute the campaign.
+        $exitCode = $applicationTester->run(
+            [
+                'command'       => 'mautic:campaigns:trigger',
+                '--campaign-id' => $campaign->getId(),
+            ]
+        );
+
+        self::assertSame(0, $exitCode, $applicationTester->getDisplay());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contactId);
+
+        self::assertCount(1, $lists);
+        $list = array_pop($lists);
+        self::assertSame($createdSegmentName, $list->getName());
+        self::assertSame($createdSegmentAlias, $list->getAlias());
     }
 
     /**
@@ -199,7 +294,11 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     {
         $this->client->request('POST', '/api/segments/batch/new', $this->segments);
         $clientResponse = $this->client->getResponse();
-        $response       = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $response = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            self::fail($e->getMessage());
+        }
 
         self::assertEquals(Response::HTTP_CREATED, $clientResponse->getStatusCode(), $clientResponse->getContent());
         self::assertCount(5, $response['statusCodes']);
@@ -218,7 +317,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ];
     }
 
-    private function testCreateMultiselectField(array $segments)
+    private function testCreateSelectField(array $segments, bool $multiselect)
     {
         $list = [];
         foreach ($segments as $segment) {
@@ -227,8 +326,8 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
         $payload = [
             'label'               => 'Manage segments',
-            'alias'               => 'manage_segments',
-            'type'                => 'multiselect',
+            'alias'               => self::FIELD_NAME,
+            'type'                => $multiselect ? 'multiselect' : 'select',
             'isPubliclyUpdatable' => true,
             'isUniqueIdentifier'  => false,
             'properties'          => [
@@ -238,24 +337,32 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
         $this->client->request(Request::METHOD_POST, '/api/fields/contact/new', $payload);
         $clientResponse = $this->client->getResponse();
-        $fieldResponse  = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $fieldResponse = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            self::fail($e->getMessage());
+        }
 
         self::assertSame(Response::HTTP_CREATED, $clientResponse->getStatusCode(), $clientResponse->getContent());
 
         return $fieldResponse['field']['id'];
     }
 
-    private function createContact(): array
+    private function createContact(): int
     {
         $this->client->request('POST', '/api/contacts/batch/new', $this->contacts);
         $clientResponse = $this->client->getResponse();
-        $response       = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        try {
+            $response = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            self::fail($e->getMessage());
+        }
 
         self::assertEquals(Response::HTTP_CREATED, $clientResponse->getStatusCode(), $clientResponse->getContent());
         self::assertCount(1, $response['statusCodes']);
         self::assertEquals(Response::HTTP_CREATED, $response['statusCodes'][0], $clientResponse->getContent());
 
-        return $response['contacts'][0];
+        return (int) $response['contacts'][0]['id'];
     }
 
     private function createCampaign(int $contactId, int $fieldId, bool $createMissing): Campaign

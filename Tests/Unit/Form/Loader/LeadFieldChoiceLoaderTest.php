@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\Form\Loader;
 
+use Generator;
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
@@ -11,34 +12,79 @@ use PHPUnit\Framework\TestCase;
 
 class LeadFieldChoiceLoaderTest extends TestCase
 {
-    public function testLoadChoiceListCached(): void
+    /**
+     * @dataProvider fieldTypeProvider
+     */
+    public function testLoadChoiceListCached(?bool $isMultiSelect): void
     {
-        $fieldId = 11;
+        $fieldId1 = 11;
+        $fieldId2 = 22;
 
-        $leadField = $this->createMock(LeadField::class);
-        $leadField->expects(self::exactly(2))
+        $leadField1 = $this->createMock(LeadField::class);
+        // amount of calls is 2: one first fetch on first call, second call is cached, so no methods are called
+        // and after reset the method is called again
+        $leadField1->expects(self::exactly(2))
             ->method('getId')
-            ->willReturn($fieldId);
+            ->willReturn($fieldId1);
+        $leadField1->expects(self::exactly(2))
+            ->method('getName')
+            ->willReturn('Field 1');
+        $leadField1->expects(self::exactly(2))
+            ->method('getType')
+            ->willReturn('Field 1 Type');
+
+        $leadField2 = $this->createMock(LeadField::class);
+        $leadField2->expects(self::exactly(2))
+            ->method('getId')
+            ->willReturn($fieldId2);
+        $leadField2->expects(self::exactly(2))
+            ->method('getName')
+            ->willReturn('Field 2');
+        $leadField2->expects(self::exactly(2))
+            ->method('getType')
+            ->willReturn('Field 2 Type');
 
         $leadFieldRepository = $this->createMock(LeadFieldRepository::class);
-        $leadFieldRepository->expects(self::exactly(2))
-            ->method('getFieldsByType')
-            ->with('multiselect')
-            ->willReturn([$leadField]);
+
+        if (null === $isMultiSelect) {
+            $leadFieldRepository->expects(self::exactly(4))
+                ->method('getFieldsByType')
+                ->withConsecutive(['multiselect'], ['select'], ['multiselect'], ['select'])
+                ->willReturnOnConsecutiveCalls(
+                    [$leadField1],
+                    [$leadField2],
+                    [$leadField1],
+                    [$leadField2],
+                );
+        } elseif (true === $isMultiSelect) {
+            $leadFieldRepository->expects(self::exactly(2))
+                ->method('getFieldsByType')
+                ->with('multiselect')
+                ->willReturn([$leadField1, $leadField2]);
+        } else {
+            $leadFieldRepository->expects(self::exactly(2))
+                ->method('getFieldsByType')
+                ->with('select')
+                ->willReturn([$leadField1, $leadField2]);
+        }
 
         $leadFieldChoiceLoader = new LeadFieldChoiceLoader($leadFieldRepository);
 
+        if (null !== $isMultiSelect) {
+            $leadFieldChoiceLoader->setType($isMultiSelect);
+        }
+
         $choiceList = $leadFieldChoiceLoader->loadChoiceList();
-        self::assertSame([$fieldId => (string) $fieldId], $choiceList->getChoices());
+        self::assertSame([$fieldId1 => (string) $fieldId1, $fieldId2 => (string) $fieldId2], $choiceList->getChoices());
 
         // 2nd call is cached
         $choiceList = $leadFieldChoiceLoader->loadChoiceList();
-        self::assertSame([$fieldId => (string) $fieldId], $choiceList->getChoices());
+        self::assertSame([$fieldId1 => (string) $fieldId1, $fieldId2 => (string) $fieldId2], $choiceList->getChoices());
 
         // reset and call again will call methods
         $leadFieldChoiceLoader->reset();
         $choiceList = $leadFieldChoiceLoader->loadChoiceList();
-        self::assertSame([$fieldId => (string) $fieldId], $choiceList->getChoices());
+        self::assertSame([$fieldId1 => (string) $fieldId1, $fieldId2 => (string) $fieldId2], $choiceList->getChoices());
     }
 
     public function testLoadChoicesForEmptyValuesDoesNotFetch(): void
@@ -83,7 +129,10 @@ class LeadFieldChoiceLoaderTest extends TestCase
         self::assertSame([], $leadFieldChoiceLoader->loadValuesForChoices([]));
     }
 
-    public function testLoadValuesForChoicesOrdersChoices(): void
+    /**
+     * @dataProvider fieldTypeProvider
+     */
+    public function testLoadValuesForChoicesOrdersChoices(?bool $isMultiSelect): void
     {
         $leadField1 = $this->createMock(LeadField::class);
         $leadField1->expects(self::exactly(3)) // because the field is first in array it gets called with 2 checks and 1 assignment
@@ -101,17 +150,38 @@ class LeadFieldChoiceLoaderTest extends TestCase
         ];
 
         $leadFieldRepository   = $this->createMock(LeadFieldRepository::class);
-        $leadFieldRepository->expects(self::once())
-            ->method('getFieldsByType')
-            ->with('multiselect')
-            ->willReturn([$leadField1, $leadField2]);
+        if (null === $isMultiSelect) {
+            $leadFieldRepository->expects(self::exactly(2))
+                ->method('getFieldsByType')
+                ->withConsecutive(['multiselect'], ['select'])
+                ->willReturnOnConsecutiveCalls(
+                    [$leadField1],
+                    [$leadField2],
+                );
+        } elseif (true === $isMultiSelect) {
+            $leadFieldRepository->expects(self::once())
+                ->method('getFieldsByType')
+                ->with('multiselect')
+                ->willReturn([$leadField1, $leadField2]);
+        } else {
+            $leadFieldRepository->expects(self::once())
+                ->method('getFieldsByType')
+                ->with('select')
+                ->willReturn([$leadField1, $leadField2]);
+        }
 
         $leadFieldChoiceLoader = new LeadFieldChoiceLoader($leadFieldRepository);
+        if (null !== $isMultiSelect) {
+            $leadFieldChoiceLoader->setType($isMultiSelect);
+        }
 
         self::assertSame([1 => 22, 10 => 11], $leadFieldChoiceLoader->loadValuesForChoices($choices));
     }
 
-    public function testLoadFieldsForChoicesOrdersChoices(): void
+    /**
+     * @dataProvider fieldTypeProvider
+     */
+    public function testLoadFieldsForChoicesOrdersChoices(?bool $isMultiSelect): void
     {
         $leadField1 = $this->createMock(LeadField::class);
         $leadField1->expects(self::exactly(2)) // because the field is first in array it gets called with 2 checks and 1 assignment
@@ -129,13 +199,38 @@ class LeadFieldChoiceLoaderTest extends TestCase
         ];
 
         $leadFieldRepository   = $this->createMock(LeadFieldRepository::class);
-        $leadFieldRepository->expects(self::once())
-            ->method('getFieldsByType')
-            ->with('multiselect')
-            ->willReturn([$leadField1, $leadField2]);
+        if (null === $isMultiSelect) {
+            $leadFieldRepository->expects(self::exactly(2))
+                ->method('getFieldsByType')
+                ->withConsecutive(['multiselect'], ['select'])
+                ->willReturnOnConsecutiveCalls(
+                    [$leadField1],
+                    [$leadField2],
+                );
+        } elseif (true === $isMultiSelect) {
+            $leadFieldRepository->expects(self::once())
+                ->method('getFieldsByType')
+                ->with('multiselect')
+                ->willReturn([$leadField1, $leadField2]);
+        } else {
+            $leadFieldRepository->expects(self::once())
+                ->method('getFieldsByType')
+                ->with('select')
+                ->willReturn([$leadField1, $leadField2]);
+        }
 
         $leadFieldChoiceLoader = new LeadFieldChoiceLoader($leadFieldRepository);
+        if (null !== $isMultiSelect) {
+            $leadFieldChoiceLoader->setType($isMultiSelect);
+        }
 
         self::assertSame([1 => $leadField2, 10 => $leadField1], $leadFieldChoiceLoader->loadFieldsForChoices($choices));
+    }
+
+    public function fieldTypeProvider(): Generator
+    {
+        yield 'all' => [null];
+        yield 'multi' => [true];
+        yield 'single' => [false];
     }
 }

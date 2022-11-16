@@ -13,7 +13,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class UpdateMultiselectFieldType extends AbstractType
+class UpdateSelectFieldType extends AbstractType
 {
     public const FIELD  = 'field';
     public const ADD    = 'multiselect_add';
@@ -30,6 +30,8 @@ class UpdateMultiselectFieldType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $this->leadFieldChoiceLoader->setType($options['multiple']);
+        $this->leadFieldValuesChoiceLoader->setType($options['multiple']);
         $builder->add(self::FIELD, ChoiceType::class, [
             'label'         => 'mautic.plugin.multiselect_handling.field_action.managed_field',
             'required'      => true,
@@ -44,17 +46,17 @@ class UpdateMultiselectFieldType extends AbstractType
             'multiple' => false,
             'expanded' => false,
         ])->add(self::ADD, ChoiceType::class, [
-            'label'         => 'mautic.plugin.multiselect_handling.field_action.multiselect_add',
+            'label'         => $options['multiple'] ? 'mautic.plugin.multiselect_handling.field_action.multiselect_add' : 'mautic.plugin.multiselect_handling.field_action.select_add',
             'required'      => false,
             'choice_loader' => $this->leadFieldValuesChoiceLoader,
             'label_attr'    => ['class' => 'control-label'],
             'attr'          => [
                 'class' => 'form-control',
             ],
-            'multiple' => true,
+            'multiple' => $options['multiple'],
             'expanded' => false,
         ])->add(self::REMOVE, ChoiceType::class, [
-            'label'         => 'mautic.plugin.multiselect_handling.field_action.multiselect_remove',
+            'label'         => $options['multiple'] ? 'mautic.plugin.multiselect_handling.field_action.multiselect_remove' : 'mautic.plugin.multiselect_handling.field_action.select_remove',
             'required'      => false,
             'choice_loader' => $this->leadFieldValuesChoiceLoader,
             'label_attr'    => ['class' => 'control-label'],
@@ -71,5 +73,7 @@ class UpdateMultiselectFieldType extends AbstractType
         $resolver->setDefault('constraints', [
             new UniqueMultiselectValues(),
         ]);
+        $resolver->setRequired('multiple');
+        $resolver->setAllowedTypes('multiple', ['bool']);
     }
 }

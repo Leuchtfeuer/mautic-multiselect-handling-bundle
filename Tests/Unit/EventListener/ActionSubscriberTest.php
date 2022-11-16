@@ -11,7 +11,7 @@ use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -21,9 +21,9 @@ class ActionSubscriberTest extends TestCase
     public function testManageFieldActionChecksContext(): void
     {
         $event = $this->createMock(CampaignExecutionEvent::class);
-        $event->expects(self::once())
+        $event->expects(self::exactly(2))
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->withConsecutive([ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION], [ActionSubscriber::MANAGE_SELECT_FIELD_ACTION])
             ->willReturn(false);
         $event->expects(self::never())
             ->method('getConfig');
@@ -44,10 +44,10 @@ class ActionSubscriberTest extends TestCase
     public function testManageFieldActionMissingField(): void
     {
         $event = $this->createMock(CampaignExecutionEvent::class);
-        $event->expects(self::once())
+        $event->expects(self::exactly(2))
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
-            ->willReturn(true);
+            ->withConsecutive([ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION], [ActionSubscriber::MANAGE_SELECT_FIELD_ACTION])
+            ->willReturnOnConsecutiveCalls(false, true);
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn(['other' => 'value']);
@@ -80,11 +80,11 @@ class ActionSubscriberTest extends TestCase
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
             ->willReturn(true);
         $event->expects(self::once())
             ->method('getConfig')
-            ->willReturn(['other' => 'value', UpdateMultiselectFieldType::FIELD => $fieldId]);
+            ->willReturn(['other' => 'value', UpdateSelectFieldType::FIELD => $fieldId]);
         $event->expects(self::once())
             ->method('getLead')
             ->willReturn($lead);
@@ -104,7 +104,7 @@ class ActionSubscriberTest extends TestCase
      * @param array<string> $expectedFieldValues
      * @dataProvider manageFieldProvider
      */
-    public function testManageFieldActionManagesFieldInContact(?string $fieldValue, array $expectedFieldValues): void
+    public function testManageFieldActionManagesMultiselectFieldInContact(?string $fieldValue, array $expectedFieldValues): void
     {
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
@@ -114,21 +114,21 @@ class ActionSubscriberTest extends TestCase
             ->method('getFields')
             ->willReturn(['core' => [
                 ['id' => '22'],
-                ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias],
+                ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'multiselect'],
             ]]);
 
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
-            ->with(ActionSubscriber::MANAGE_FIELD_ACTION)
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
             ->willReturn(true);
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn([
-                'other'                            => 'value',
-                UpdateMultiselectFieldType::FIELD  => $fieldId,
-                UpdateMultiselectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
-                UpdateMultiselectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
+                'other'                       => 'value',
+                UpdateSelectFieldType::FIELD  => $fieldId,
+                UpdateSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
+                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
             ]);
         $event->expects(self::once())
             ->method('getLead')
@@ -159,6 +159,144 @@ class ActionSubscriberTest extends TestCase
             ['alias_remove_1|alias_add_1|alias_remove_2', ['alias_add_1', 'alias_add_2']],
             ['alias_remove_1|alias_add_1|alias_remove_2|other', ['alias_add_1', 'other', 'alias_add_2']],
         ];
+    }
+
+    public function testManageFieldActionManagesSelectFieldInContact(): void
+    {
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'selected';
+
+        $lead = $this->createMock(Lead::class);
+        $lead->expects(self::once())
+            ->method('getFields')
+            ->willReturn(['core' => [
+                ['id' => '22'],
+                ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'select'],
+            ]]);
+
+        $event = $this->createMock(CampaignExecutionEvent::class);
+        $event->expects(self::once())
+            ->method('checkContext')
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
+            ->willReturn(true);
+        $event->expects(self::once())
+            ->method('getConfig')
+            ->willReturn([
+                'other'                       => 'value',
+                UpdateSelectFieldType::FIELD  => $fieldId,
+                UpdateSelectFieldType::ADD    => $fieldId.'-alias_add_1',
+                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'], // this actually does not matter, but i'd leave it here
+            ]);
+        $event->expects(self::once())
+            ->method('getLead')
+            ->willReturn($lead);
+
+        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel->expects(self::once())
+            ->method('saveEntity')
+            ->with($lead);
+        $leadModel->expects(self::once())
+            ->method('setFieldValues')
+            ->with($lead, [$fieldAlias => 'alias_add_1'], true);
+        $segmentsModel = $this->createMock(SegmentsModel::class);
+        $segmentsModel->expects(self::never())
+            ->method('getSegments');
+
+        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber->onManageFieldAction($event);
+    }
+
+    public function testManageFieldActionAddsLastToSelectFieldInContact(): void
+    {
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'selected';
+
+        $lead = $this->createMock(Lead::class);
+        $lead->expects(self::once())
+            ->method('getFields')
+            ->willReturn(['core' => [
+                ['id' => '22'],
+                ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'select'],
+            ]]);
+
+        $event = $this->createMock(CampaignExecutionEvent::class);
+        $event->expects(self::once())
+            ->method('checkContext')
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
+            ->willReturn(true);
+        $event->expects(self::once())
+            ->method('getConfig')
+            ->willReturn([
+                'other'                       => 'value',
+                UpdateSelectFieldType::FIELD  => $fieldId,
+                UpdateSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
+                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'], // this actually does not matter, but i'd leave it here
+            ]);
+        $event->expects(self::once())
+            ->method('getLead')
+            ->willReturn($lead);
+
+        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel->expects(self::once())
+            ->method('saveEntity')
+            ->with($lead);
+        $leadModel->expects(self::once())
+            ->method('setFieldValues')
+            ->with($lead, [$fieldAlias => 'alias_add_2'], true);
+        $segmentsModel = $this->createMock(SegmentsModel::class);
+        $segmentsModel->expects(self::never())
+            ->method('getSegments');
+
+        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber->onManageFieldAction($event);
+    }
+
+    public function testManageFieldActionRemovesFromSelectFieldInContact(): void
+    {
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'alias_remove_1';
+
+        $lead = $this->createMock(Lead::class);
+        $lead->expects(self::once())
+            ->method('getFields')
+            ->willReturn(['core' => [
+                ['id' => '22'],
+                ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'select'],
+            ]]);
+
+        $event = $this->createMock(CampaignExecutionEvent::class);
+        $event->expects(self::once())
+            ->method('checkContext')
+            ->with(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION)
+            ->willReturn(true);
+        $event->expects(self::once())
+            ->method('getConfig')
+            ->willReturn([
+                'other'                       => 'value',
+                UpdateSelectFieldType::FIELD  => $fieldId,
+                UpdateSelectFieldType::ADD    => '', // note empty field here
+                UpdateSelectFieldType::REMOVE => [$fieldId.'-'.$fieldValue, $fieldId.'-alias_remove_2'],
+            ]);
+        $event->expects(self::once())
+            ->method('getLead')
+            ->willReturn($lead);
+
+        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel->expects(self::once())
+            ->method('saveEntity')
+            ->with($lead);
+        $leadModel->expects(self::once())
+            ->method('setFieldValues')
+            ->with($lead, [$fieldAlias => null], true);
+        $segmentsModel = $this->createMock(SegmentsModel::class);
+        $segmentsModel->expects(self::never())
+            ->method('getSegments');
+
+        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber->onManageFieldAction($event);
     }
 
     public function testManageSegmentsActionChecksContext(): void
@@ -468,8 +606,9 @@ class ActionSubscriberTest extends TestCase
     public function testSubscribedEvents(): void
     {
         self::assertSame([
-            ActionSubscriber::MANAGE_FIELD_EVENT    => 'onManageFieldAction',
-            ActionSubscriber::MANAGE_SEGMENTS_EVENT => 'onManageSegmentsAction',
+            ActionSubscriber::MANAGE_MULTISELECT_FIELD_EVENT => 'onManageFieldAction',
+            ActionSubscriber::MANAGE_SELECT_FIELD_EVENT      => 'onManageFieldAction',
+            ActionSubscriber::MANAGE_SEGMENTS_EVENT          => 'onManageSegmentsAction',
         ], ActionSubscriber::getSubscribedEvents());
     }
 }

@@ -11,17 +11,20 @@ use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticMultiselectHandlingBundle\Exception\UnexpectedTypeException;
 use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateMultiselectFieldType;
+use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ActionSubscriber implements EventSubscriberInterface
 {
-    public const MANAGE_FIELD_EVENT     = 'plugin.multiselect_handling.manage_field_event';
-    public const MANAGE_SEGMENTS_EVENT  = 'plugin.multiselect_handling.manage_segments_event';
-    public const MANAGE_FIELD_ACTION    = 'plugin.multiselect_handling.manage_field_action';
-    public const MANAGE_SEGMENTS_ACTION = 'plugin.multiselect_handling.manage_segments_action';
+    public const MANAGE_MULTISELECT_FIELD_EVENT = 'plugin.multiselect_handling.manage_multiselect_field_event';
+    public const MANAGE_SELECT_FIELD_EVENT      = 'plugin.multiselect_handling.manage_select_field_event';
+    public const MANAGE_SEGMENTS_EVENT          = 'plugin.multiselect_handling.manage_segments_event';
+    // strange names due to mautic having a constraint in the `campaign_events` table for 50 symbols
+    public const MANAGE_MULTISELECT_FIELD_ACTION = 'plugin.multiselect_handling.manage_N_field_action';
+    public const MANAGE_SELECT_FIELD_ACTION      = 'plugin.multiselect_handling.manage_1_field_action';
+    public const MANAGE_SEGMENTS_ACTION          = 'plugin.multiselect_handling.manage_segments_action';
 
     private LeadModel $leadModel;
 
@@ -35,25 +38,47 @@ class ActionSubscriber implements EventSubscriberInterface
 
     public function onManageFieldAction(CampaignExecutionEvent $event): void
     {
-        if (!$event->checkContext(self::MANAGE_FIELD_ACTION)) {
+        if (!$event->checkContext(self::MANAGE_MULTISELECT_FIELD_ACTION) && !$event->checkContext(self::MANAGE_SELECT_FIELD_ACTION)) {
             return;
         }
 
         $values = $event->getConfig();
 
-        if (!isset($values[UpdateMultiselectFieldType::FIELD])) {
+        if (!isset($values[UpdateSelectFieldType::FIELD])) {
             throw new RuntimeException('Invalid event configuration.');
         }
 
-        $lead   = $event->getLead();
+        $fields = [
+            UpdateSelectFieldType::ADD    => [],
+            UpdateSelectFieldType::REMOVE => [],
+        ];
+        foreach ($fields as $key => $item) {
+            if (isset($values[$key])) {
+                if (is_string($values[$key]) && '' !== $values[$key]) {
+                    $fields[$key] = [$values[$key]];
+                    continue;
+                }
 
-        if (null === $field = $this->getCurrentField($event, $lead, $values)) {
+                if (is_array($values[$key]) && [] !== $values[$key]) {
+                    $fields[$key] = $values[$key];
+                    continue;
+                }
+
+                if (!is_array($values[$key]) && !is_string($values[$key])) {
+                    throw new RuntimeException('Field values has an incompatible type.');
+                }
+            }
+        }
+
+        $lead = $event->getLead();
+
+        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
 
         $currentValue = $this->getFieldValue($field);
 
-        foreach ($values[UpdateMultiselectFieldType::ADD] as $idAliasToAdd) {
+        foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
             $aliasToAdd = explode('-', $idAliasToAdd)[1];
             if (in_array($aliasToAdd, $currentValue, true)) {
                 continue;
@@ -62,7 +87,7 @@ class ActionSubscriber implements EventSubscriberInterface
             $currentValue[] = $aliasToAdd;
         }
 
-        foreach ($values[UpdateMultiselectFieldType::REMOVE] as $idAliasToRemove) {
+        foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
             $aliasToRemove = explode('-', $idAliasToRemove)[1];
             if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
                 continue;
@@ -71,7 +96,13 @@ class ActionSubscriber implements EventSubscriberInterface
             unset($currentValue[$index]);
         }
 
-        $this->leadModel->setFieldValues($lead, [$field['alias'] => array_filter(array_values($currentValue))], true);
+        $fieldValue = array_filter(array_values($currentValue));
+
+        if ('select' === $field['type']) {
+            $fieldValue = count($fieldValue) > 0 ? array_pop($fieldValue) : null;
+        }
+
+        $this->leadModel->setFieldValues($lead, [$field['alias'] => $fieldValue], true);
         $this->leadModel->saveEntity($lead);
 
         $event->setResult(true); // for legacy event dispatcher
@@ -89,9 +120,9 @@ class ActionSubscriber implements EventSubscriberInterface
             throw new RuntimeException('Invalid event configuration.');
         }
 
-        $lead   = $event->getLead();
+        $lead = $event->getLead();
 
-        if (null === $field = $this->getCurrentField($event, $lead, $values)) {
+        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
 
@@ -136,8 +167,9 @@ class ActionSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            self::MANAGE_FIELD_EVENT    => 'onManageFieldAction',
-            self::MANAGE_SEGMENTS_EVENT => 'onManageSegmentsAction',
+            self::MANAGE_MULTISELECT_FIELD_EVENT => 'onManageFieldAction',
+            self::MANAGE_SELECT_FIELD_EVENT      => 'onManageFieldAction',
+            self::MANAGE_SEGMENTS_EVENT          => 'onManageSegmentsAction',
         ];
     }
 
@@ -146,13 +178,13 @@ class ActionSubscriber implements EventSubscriberInterface
      *
      * @return array<string>
      */
-    private function getCurrentField(CampaignExecutionEvent $event, Lead $lead, array $values): ?array
+    private function getCurrentField(Lead $lead, int $fieldId): ?array
     {
         $fields = $lead->getFields();
         $field  = [];
 
         foreach ($fields['core'] as $coreField) {
-            if ((int) $coreField['id'] !== (int) $values[UpdateMultiselectFieldType::FIELD]) {
+            if ((int) $coreField['id'] !== $fieldId) {
                 continue;
             }
 
