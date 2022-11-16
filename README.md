@@ -16,6 +16,6 @@ After form is submitted the Contact will be added/removed to/from segments accor
 3. Select values to remove from multiselect field. In case this value is empty no values will be removed.
 
 ### Campaign action "Change contact's select field"
-1. Select managed multiselect field.
+1. Select managed select field.
 2. Select value to set as the value of a select field. In case this value is empty the value will be not set by this action.
 3. Select values to remove from a select field. In case this value is empty no values will be removed.
