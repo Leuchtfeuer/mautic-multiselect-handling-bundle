@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'name'        => 'Multiselect handle',
+    'name'        => 'Leuchtfeuer Multiselect Handle',
     'description' => 'Provides custom actions to manage multiselect fields.',
-    'version'     => '1.1.0',
-    'author'      => 'Leuchtfeuer',
+    'version'     => '1.2.0',
+    'author'      => 'Leuchtfeuer Digital Marketing GmbH',
     'services'    => [
         'other' => [
             'mautic.plugin.multiselect_handling.lead_field_choice_loader' => [
