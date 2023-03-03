@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'name'        => 'Leuchtfeuer Multiselect Handle',
+    'name'        => 'Multiselect Handling by Leuchtfeuer',
     'description' => 'Provides custom actions to manage multiselect fields.',
-    'version'     => '1.2.0',
+    'version'     => '1.2.1',
     'author'      => 'Leuchtfeuer Digital Marketing GmbH',
     'services'    => [
         'other' => [
