@@ -2,12 +2,11 @@
 Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect”. Handling of fieldtype "Select" was introduced in later version, thus the naming "multiselect".
 
 
-## Plugin Installation
-1. Download the Plugin
-2. Move to /htdocs/plugins
-3. Move to folder MauticMultiselectHandlingBundle.
-4. Clear Cache
-5. Reload Plugins
+## Installation / Integration
+* Folder name for this plugin has to be LeuchtfeuerMultiselectHandlingBundle.
+* Clear the cache.
+* In Mautic UI "Plugins" click "Install/Upgrade Plugins".
+* Click on "Leuchtfeuer Multiselect Handling" and activate it with "Yes".
 
 ## Features
 

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\Form\Loader;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\Form\Loader;
 
 use Generator;
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use PHPUnit\Framework\TestCase;
 
 class LeadFieldChoiceLoaderTest extends TestCase

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Validator;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Validator;
 
 use Symfony\Component\Validator\Constraint;
 

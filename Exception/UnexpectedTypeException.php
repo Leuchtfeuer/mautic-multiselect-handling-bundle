@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Exception;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception;
 
 class UnexpectedTypeException extends \RuntimeException
 {

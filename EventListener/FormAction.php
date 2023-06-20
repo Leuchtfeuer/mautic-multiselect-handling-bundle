@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\EventListener;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener;
 
 use Mautic\FormBundle\Event\SubmissionEvent;
 use Mautic\FormBundle\Exception\ValidationException;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\InvalidSetupException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\NonExistingListException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 
 class FormAction implements EventSubscriberInterface
 {
@@ -24,6 +25,8 @@ class FormAction implements EventSubscriberInterface
 
     public const NON_EXISTING_LIST = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_non_existing_list';
 
+    private Config $config;
+
     private TranslatorInterface $translator;
 
     private LeadFieldChoiceLoader $choiceLoader;
@@ -32,8 +35,9 @@ class FormAction implements EventSubscriberInterface
 
     private SegmentsModel $segmentsModel;
 
-    public function __construct(LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, SegmentsModel $segmentsModel)
+    public function __construct(Config $config, LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, SegmentsModel $segmentsModel)
     {
+        $this->config           = $config;
         $this->choiceLoader     = $choiceLoader;
         $this->translator       = $translator;
         $this->leadModel        = $leadModel;
@@ -45,6 +49,10 @@ class FormAction implements EventSubscriberInterface
      */
     public function onAction(SubmissionEvent $event): void
     {
+        if (!$this->config->isPublished()) {
+            return;
+        }
+
         if (false === $event->checkContext(FormSubscriber::ACTION) || null === $action = $event->getAction()) {
             return;
         }
