@@ -26,20 +26,24 @@ return [
                     'mautic.plugin.multiselect_handling.lead_field_choice_loader',
                 ],
             ],
-                'mautic.leuchtfeuermultiselect.config' => [
-                    'class'     => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config::class,
-                    'arguments' => [
-                        'mautic.integrations.helper',
+            'mautic.leuchtfeuermultiselect.config' => [
+                'class'     => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config::class,
+                'arguments' => [
+                    'mautic.integrations.helper',
                     ],
                 ],
             ],
         'events' => [
             \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber::class => [
                 'class'     => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber::class,
+                'arguments' => [
+                    'mautic.leuchtfeuermultiselect.config',
+                ],
             ],
             \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormAction::class => [
                 'class'     => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormAction::class,
                 'arguments' => [
+                    'mautic.leuchtfeuermultiselect.config',
                     'mautic.plugin.multiselect_handling.lead_field_choice_loader',
                     'translator',
                     'mautic.lead.model.lead',
@@ -49,12 +53,16 @@ return [
             \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber::class => [
                 'class'     => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber::class,
                 'arguments' => [
+                    'mautic.leuchtfeuermultiselect.config',
                     'mautic.lead.model.lead',
                     'mautic.plugin.multiselect_handling.model.segments',
                 ],
             ],
             \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\CampaignSubscriber::class => [
                 'class' => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\CampaignSubscriber::class,
+                'arguments' => [
+                    'mautic.leuchtfeuermultiselect.config',
+                ],
             ],
         ],
         'forms' => [

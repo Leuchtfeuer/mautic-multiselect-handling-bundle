@@ -12,6 +12,7 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupExce
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -24,6 +25,8 @@ class FormAction implements EventSubscriberInterface
 
     public const NON_EXISTING_LIST = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_non_existing_list';
 
+    private Config $config;
+
     private TranslatorInterface $translator;
 
     private LeadFieldChoiceLoader $choiceLoader;
@@ -32,8 +35,9 @@ class FormAction implements EventSubscriberInterface
 
     private SegmentsModel $segmentsModel;
 
-    public function __construct(LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, SegmentsModel $segmentsModel)
+    public function __construct(Config $config, LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, SegmentsModel $segmentsModel)
     {
+        $this->config           = $config;
         $this->choiceLoader     = $choiceLoader;
         $this->translator       = $translator;
         $this->leadModel        = $leadModel;
@@ -45,6 +49,10 @@ class FormAction implements EventSubscriberInterface
      */
     public function onAction(SubmissionEvent $event): void
     {
+        if (!$this->config->isPublished()) {
+            return;
+        }
+
         if (false === $event->checkContext(FormSubscriber::ACTION) || null === $action = $event->getAction()) {
             return;
         }
