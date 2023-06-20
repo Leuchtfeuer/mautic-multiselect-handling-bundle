@@ -8,18 +8,10 @@ use Mautic\FormBundle\Event\FormBuilderEvent;
 use Mautic\FormBundle\FormEvents;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 
 class FormSubscriber implements EventSubscriberInterface
 {
     public const ACTION = 'plugin.multiselectHandlingManageAction';
-
-    private Config $config;
-
-    public function __construct(Config $config)
-    {
-        $this->config = $config;
-    }
 
     public static function getSubscribedEvents(): array
     {
@@ -30,10 +22,6 @@ class FormSubscriber implements EventSubscriberInterface
 
     public function onFormBuild(FormBuilderEvent $event): void
     {
-        if (!$this->config->isPublished()) {
-            return;
-        }
-
         $event->addSubmitAction(
             self::ACTION,
             [

@@ -15,7 +15,6 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFiel
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 
 class ActionSubscriber implements EventSubscriberInterface
 {
@@ -27,25 +26,18 @@ class ActionSubscriber implements EventSubscriberInterface
     public const MANAGE_SELECT_FIELD_ACTION      = 'plugin.multiselect_handling.manage_1_field_action';
     public const MANAGE_SEGMENTS_ACTION          = 'plugin.multiselect_handling.manage_segments_action';
 
-    private Config $config;
-
     private LeadModel $leadModel;
 
     private SegmentsModel $segmentsModel;
 
-    public function __construct(Config $config, LeadModel $leadModel, SegmentsModel $segmentsModel)
+    public function __construct(LeadModel $leadModel, SegmentsModel $segmentsModel)
     {
-        $this->config        = $config;
         $this->leadModel     = $leadModel;
         $this->segmentsModel = $segmentsModel;
     }
 
     public function onManageFieldAction(CampaignExecutionEvent $event): void
     {
-        if (!$this->config->isPublished()) {
-            return;
-        }
-
         if (!$event->checkContext(self::MANAGE_MULTISELECT_FIELD_ACTION) && !$event->checkContext(self::MANAGE_SELECT_FIELD_ACTION)) {
             return;
         }
@@ -118,10 +110,6 @@ class ActionSubscriber implements EventSubscriberInterface
 
     public function onManageSegmentsAction(CampaignExecutionEvent $event): void
     {
-        if (!$this->config->isPublished()) {
-            return;
-        }
-
         if (!$event->checkContext(self::MANAGE_SEGMENTS_ACTION)) {
             return;
         }
