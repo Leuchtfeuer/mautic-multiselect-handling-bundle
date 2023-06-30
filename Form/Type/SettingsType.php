@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Form\Type;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type;
 
 use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;

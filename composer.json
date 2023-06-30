@@ -13,7 +13,7 @@
         "ext-json": "*"
     },
     "extra": {
-        "install-directory-name": "MauticMultiselectHandlingBundle"
+        "install-directory-name": "LeuchtfeuerMultiselectHandlingBundle"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -22,12 +22,12 @@
     },
     "autoload": {
         "psr-4": {
-            "MauticPlugin\\MauticMultiselectHandlingBundle\\": ""
+            "MauticPlugin\\LeuchtfeuerMultiselectHandlingBundle\\": ""
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "MauticPlugin\\MauticMultiselectHandlingBundle\\Tests\\": "Tests"
+            "MauticPlugin\\LeuchtfeuerMultiselectHandlingBundle\\Tests\\": "Tests"
         }
     },
     "repositories": [

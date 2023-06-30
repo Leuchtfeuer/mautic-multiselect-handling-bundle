@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\EventListener;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\EventListener;
 
 use Mautic\FormBundle\Entity\Action;
 use Mautic\FormBundle\Event\SubmissionEvent;
@@ -11,12 +11,12 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\FormAction;
-use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\FormSubscriber;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\NonExistingListException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormAction;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

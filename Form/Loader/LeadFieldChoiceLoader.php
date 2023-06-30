@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader;
 
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;

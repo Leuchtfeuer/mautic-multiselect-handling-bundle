@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Validator;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Validator;
 
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;

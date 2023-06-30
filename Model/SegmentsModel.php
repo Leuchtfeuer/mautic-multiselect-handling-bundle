@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Model;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model;
 
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\ListModel;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\InvalidSetupException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\NonExistingListException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 
 class SegmentsModel
 {

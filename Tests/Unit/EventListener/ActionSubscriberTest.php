@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\EventListener;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\EventListener;
 
 use LogicException;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticMultiselectHandlingBundle\EventListener\ActionSubscriber;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

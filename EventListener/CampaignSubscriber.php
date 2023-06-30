@@ -2,18 +2,30 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\EventListener;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener;
 
 use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CampaignSubscriber implements EventSubscriberInterface
 {
+    private Config $config;
+
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
+
     public function onCampaignBuild(CampaignBuilderEvent $event): void
     {
+        if (!$this->config->isPublished()) {
+            return;
+        }
+
         $action = [
             'label'           => 'plugin.multiselect_handling.multiselect_field_action.label',
             'description'     => 'plugin.multiselect_handling.multiselect_field_action.description',

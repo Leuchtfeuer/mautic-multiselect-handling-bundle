@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace MauticPlugin\MauticMultiselectHandlingBundle\Tests\Unit\Model;
+namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\Model;
 
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\ListModel;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\InvalidSetupException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Exception\NonExistingListException;
-use MauticPlugin\MauticMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
-use MauticPlugin\MauticMultiselectHandlingBundle\Model\SegmentsModel;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\TestCase;
 
 class SegmentsModelTest extends TestCase
