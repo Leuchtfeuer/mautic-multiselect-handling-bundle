@@ -9,6 +9,8 @@ use Mautic\FormBundle\Model\FormModel;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\PluginBundle\Entity\Integration;
+use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,17 +63,18 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
         $this->leadModel = self::$container->get(LeadModel::class);
         $this->formModel = self::$container->get(FormModel::class);
-
+        $this->activatePlugin(true);
         $this->client->followRedirects(false);
     }
 
-    protected function tearDown(): void
+    protected function beforeTearDown(): void
     {
         $tablePrefix = self::$container->getParameter('mautic.db_table_prefix');
 
         // Cleanup
         self::ensureKernelShutdown();
         $this->setUpSymfony($this->configParams);
+
         if (null !== $this->created['contact']) {
             $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$this->created['contact']['id'].'/delete', []);
             $clientResponse = $this->client->getResponse();
@@ -100,11 +103,28 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
             $this->created['contact_field'] = null;
         }
 
-        parent::tearDown();
+//        parent::tearDown();
 
         if ($this->connection->getSchemaManager()->tablesExist("{$tablePrefix}form_results_1_submission")) {
             $this->connection->executeQuery("DROP TABLE {$tablePrefix}form_results_1_submission");
         }
+    }
+
+    private function activatePlugin($isPublished=true)
+    {
+        $this->client->request('GET', '/s/plugins/reload');
+        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
+        if (empty($integration)) {
+            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
+            $integration = new Integration();
+            $integration->setName('LeuchtfeuerMultiselect');
+            $integration->setPlugin($plugin);
+        }
+        $integration->setIsPublished($isPublished);
+        $this->em->persist($integration);
+        $this->em->flush();
     }
 
     public function testFunctionalMultiSelectWithoutCreatingMissing(): void

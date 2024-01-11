@@ -45,6 +45,7 @@ class SegmentsModelTest extends TestCase
 
     /**
      * @param array<mixed> $properties
+     *
      * @dataProvider invalidProperties
      */
     public function testInvalidChoiceProperties(array $properties): void
@@ -79,6 +80,7 @@ class SegmentsModelTest extends TestCase
 
     /**
      * @param array<mixed> $segmentsData
+     *
      * @dataProvider invalidSegmentData
      */
     public function testInvalidSegmentsReturnsNull(array $segmentsData): void

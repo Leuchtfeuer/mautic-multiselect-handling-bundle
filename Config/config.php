@@ -59,7 +59,7 @@ return [
                 ],
             ],
             \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\CampaignSubscriber::class => [
-                'class' => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\CampaignSubscriber::class,
+                'class'     => \MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\CampaignSubscriber::class,
                 'arguments' => [
                     'mautic.leuchtfeuermultiselect.config',
                 ],

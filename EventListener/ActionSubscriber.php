@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener;
 
-use LogicException;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
@@ -14,7 +13,6 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
-use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ActionSubscriber implements EventSubscriberInterface
@@ -53,7 +51,7 @@ class ActionSubscriber implements EventSubscriberInterface
         $values = $event->getConfig();
 
         if (!isset($values[UpdateSelectFieldType::FIELD])) {
-            throw new RuntimeException('Invalid event configuration.');
+            throw new \RuntimeException('Invalid event configuration.');
         }
 
         $fields = [
@@ -73,7 +71,7 @@ class ActionSubscriber implements EventSubscriberInterface
                 }
 
                 if (!is_array($values[$key]) && !is_string($values[$key])) {
-                    throw new RuntimeException('Field values has an incompatible type.');
+                    throw new \RuntimeException('Field values has an incompatible type.');
                 }
             }
         }
@@ -129,7 +127,7 @@ class ActionSubscriber implements EventSubscriberInterface
         $values = $event->getConfig();
 
         if (!isset($values[SettingsType::FIELD], $values[SettingsType::CHECKBOX])) {
-            throw new RuntimeException('Invalid event configuration.');
+            throw new \RuntimeException('Invalid event configuration.');
         }
 
         $lead = $event->getLead();
@@ -142,7 +140,7 @@ class ActionSubscriber implements EventSubscriberInterface
         $multiselectFieldId = $values[SettingsType::FIELD];
 
         if (null === $availableSegments = $this->segmentsModel->getSegments($multiselectFieldId, (bool) $values[SettingsType::CHECKBOX])) {
-            throw new LogicException('Invalid setup.');
+            throw new \LogicException('Invalid setup.');
         }
 
         /** @var LeadList[] $currentSegments */

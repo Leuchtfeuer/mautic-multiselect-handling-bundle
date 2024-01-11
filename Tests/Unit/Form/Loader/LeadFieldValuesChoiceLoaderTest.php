@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\Form\Loader;
 
-use Generator;
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldValuesChoiceLoader;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 class LeadFieldValuesChoiceLoaderTest extends TestCase
 {
@@ -252,7 +250,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
 
         $leadFieldChoiceLoader = new LeadFieldValuesChoiceLoader($leadFieldRepository);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('There is something wrong with the field alias.');
         $leadFieldChoiceLoader->loadChoicesForValues($values);
 
@@ -269,7 +267,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
 
         $leadFieldChoiceLoader = new LeadFieldValuesChoiceLoader($leadFieldRepository);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('There is something wrong with the field alias.');
         $leadFieldChoiceLoader->loadChoicesForValues($values);
 
@@ -373,7 +371,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         ], $leadFieldChoiceLoader->loadValuesForChoices($choices));
     }
 
-    public function fieldTypeProvider(): Generator
+    public function fieldTypeProvider(): \Generator
     {
         yield 'all' => [null];
         yield 'multi' => [true];
