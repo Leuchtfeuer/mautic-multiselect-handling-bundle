@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\EventListener;
 
-use LogicException;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
@@ -12,14 +11,18 @@ use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 class ActionSubscriberTest extends TestCase
 {
     public function testManageFieldActionChecksContext(): void
     {
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::exactly(2))
             ->method('checkContext')
@@ -37,12 +40,16 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
     public function testManageFieldActionMissingField(): void
     {
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::exactly(2))
             ->method('checkContext')
@@ -61,17 +68,20 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Invalid event configuration.');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
     public function testManageFieldActionMissingFieldInContact(): void
     {
         $fieldId = 2376;
-
+        $config  = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -96,19 +106,23 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
     /**
      * @param array<string> $expectedFieldValues
+     *
      * @dataProvider manageFieldProvider
      */
     public function testManageFieldActionManagesMultiselectFieldInContact(?string $fieldValue, array $expectedFieldValues): void
     {
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -145,7 +159,7 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
@@ -166,7 +180,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'selected';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -203,7 +220,7 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
@@ -212,7 +229,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'selected';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -249,7 +269,7 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
@@ -258,7 +278,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'alias_remove_1';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -295,12 +318,16 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageFieldAction($event);
     }
 
     public function testManageSegmentsActionChecksContext(): void
     {
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -322,16 +349,21 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
     }
 
     /**
      * @param array<string> $fields
+     *
      * @dataProvider missingManageSegmentsField
      */
     public function testManageSegmentsActionMissingField(array $fields): void
     {
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -354,10 +386,10 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Invalid event configuration.');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
     }
 
@@ -376,7 +408,10 @@ class ActionSubscriberTest extends TestCase
     public function testManageSegmentsActionMissingFieldInContact(): void
     {
         $fieldId = 2376;
-
+        $config  = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -405,7 +440,7 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::never())
             ->method('getSegments');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
     }
 
@@ -414,7 +449,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'alias_remove_1|alias_add_1|alias_remove_2|other';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -448,10 +486,10 @@ class ActionSubscriberTest extends TestCase
             ->with($fieldId, false)
             ->willReturn(null);
 
-        $this->expectException(LogicException::class);
+        $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Invalid setup.');
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
     }
 
@@ -469,6 +507,10 @@ class ActionSubscriberTest extends TestCase
         $aliasAdd2    = 'alias_add_2';
         $fieldValue   = $aliasAdd1.'|'.$aliasAdd2;
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -526,7 +568,7 @@ class ActionSubscriberTest extends TestCase
                 $idAdd2    => $aliasAdd2,
             ]);
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
     }
 
@@ -544,6 +586,10 @@ class ActionSubscriberTest extends TestCase
         $aliasAdd2    = 'alias_add_2';
         $fieldValue   = $aliasAdd1.'|'.$aliasAdd2;
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -599,7 +645,7 @@ class ActionSubscriberTest extends TestCase
                 $idAdd2    => $aliasAdd2,
             ]);
 
-        $subscriber = new ActionSubscriber($leadModel, $segmentsModel);
+        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
     }
 

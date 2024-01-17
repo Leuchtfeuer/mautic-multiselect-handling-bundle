@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\Form\Loader;
 
-use Generator;
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
@@ -227,7 +226,7 @@ class LeadFieldChoiceLoaderTest extends TestCase
         self::assertSame([1 => $leadField2, 10 => $leadField1], $leadFieldChoiceLoader->loadFieldsForChoices($choices));
     }
 
-    public function fieldTypeProvider(): Generator
+    public function fieldTypeProvider(): \Generator
     {
         yield 'all' => [null];
         yield 'multi' => [true];

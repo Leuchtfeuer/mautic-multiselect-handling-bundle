@@ -12,6 +12,8 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\PluginBundle\Entity\Integration;
+use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -74,9 +76,10 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         parent::setUp();
 
         $this->leadModel = self::$container->get(LeadModel::class);
+        $this->activatePlugin(true);
     }
 
-    protected function tearDown(): void
+    protected function beforeTearDown(): void
     {
         // Cleanup
         self::ensureKernelShutdown();
@@ -111,8 +114,23 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
             self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             $this->fieldId = null;
         }
+    }
 
-        parent::tearDown();
+    private function activatePlugin($isPublished=true)
+    {
+        $this->client->request('GET', '/s/plugins/reload');
+        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
+        if (empty($integration)) {
+            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
+            $integration = new Integration();
+            $integration->setName('LeuchtfeuerMultiselect');
+            $integration->setPlugin($plugin);
+        }
+        $integration->setIsPublished($isPublished);
+        $this->em->persist($integration);
+        $this->em->flush();
     }
 
     public function testFunctionalMultiselectWithoutCreatingMissing(): void
