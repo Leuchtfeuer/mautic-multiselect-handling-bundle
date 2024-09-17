@@ -121,7 +121,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         }
     }
 
-    private function activatePlugin($isPublished=true)
+    private function activatePlugin(bool $isPublished=true): void
     {
         $this->client->request('GET', '/s/plugins/reload');
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());
