@@ -34,7 +34,6 @@ class SettingsType extends AbstractType
             ],
         ])->add(self::CHECKBOX, YesNoButtonGroupType::class, [
             'label' => 'mautic.plugin.multiselect_handling.field.create_segments_checkbox',
-            'data'  => false,
             'attr'  => [
                 'tooltip' => 'mautic.plugin.multiselect_handling.field.create_segments_checkbox_desc',
             ],

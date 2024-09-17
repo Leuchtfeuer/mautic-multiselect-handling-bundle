@@ -36,6 +36,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -81,6 +85,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -128,6 +136,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -185,6 +197,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -261,6 +277,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -336,6 +356,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -403,6 +427,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -482,10 +510,10 @@ class FormActionTest extends TestCase
         $exceptionMessage          = 'Exception!';
         $actionProperties          = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '0'];
 
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
-
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -564,6 +592,7 @@ class FormActionTest extends TestCase
         $removeSegment                = $this->createMock(LeadList::class);
         $otherSegment                 = $this->createMock(LeadList::class);
 
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
@@ -675,6 +704,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -772,6 +805,10 @@ class FormActionTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
 
+        $config = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)

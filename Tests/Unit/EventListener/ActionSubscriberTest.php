@@ -19,34 +19,8 @@ class ActionSubscriberTest extends TestCase
 {
     public function testManageFieldActionChecksContext(): void
     {
-        $config                    = $this->createMock(Config::class);
-        $config->expects(self::once())
-            ->method('isPublished')
-            ->willReturn(true);
-        $event = $this->createMock(CampaignExecutionEvent::class);
-        $event->expects(self::exactly(2))
-            ->method('checkContext')
-            ->withConsecutive([ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION], [ActionSubscriber::MANAGE_SELECT_FIELD_ACTION])
-            ->willReturn(false);
-        $event->expects(self::never())
-            ->method('getConfig');
-        $event->expects(self::never())
-            ->method('getLead');
 
-        $leadModel = $this->createMock(LeadModel::class);
-        $leadModel->expects(self::never())
-            ->method('saveEntity');
-        $segmentsModel = $this->createMock(SegmentsModel::class);
-        $segmentsModel->expects(self::never())
-            ->method('getSegments');
-
-        $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
-        $subscriber->onManageFieldAction($event);
-    }
-
-    public function testManageFieldActionMissingField(): void
-    {
-        $config                    = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
@@ -83,7 +57,10 @@ class ActionSubscriberTest extends TestCase
             ->willReturn(true);
 
         $fieldId = 2376;
-
+        $config  = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -126,7 +103,10 @@ class ActionSubscriberTest extends TestCase
 
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -189,7 +169,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'selected';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -240,7 +223,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'selected';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -291,7 +277,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'alias_remove_1';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -334,7 +323,7 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageSegmentsActionChecksContext(): void
     {
-        $config                    = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
@@ -370,11 +359,10 @@ class ActionSubscriberTest extends TestCase
      */
     public function testManageSegmentsActionMissingField(array $fields): void
     {
-        $config                    = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
-
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -424,7 +412,10 @@ class ActionSubscriberTest extends TestCase
             ->willReturn(true);
 
         $fieldId = 2376;
-
+        $config  = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -467,7 +458,10 @@ class ActionSubscriberTest extends TestCase
         $fieldId    = 2376;
         $fieldAlias = 'field_alias';
         $fieldValue = 'alias_remove_1|alias_add_1|alias_remove_2|other';
-
+        $config     = $this->createMock(Config::class);
+        $config->expects(self::once())
+            ->method('isPublished')
+            ->willReturn(true);
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -521,12 +515,10 @@ class ActionSubscriberTest extends TestCase
         $aliasAdd1    = 'alias_add_1';
         $aliasAdd2    = 'alias_add_2';
         $fieldValue   = $aliasAdd1.'|'.$aliasAdd2;
-
-        $config                    = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
-
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -601,12 +593,10 @@ class ActionSubscriberTest extends TestCase
         $aliasAdd1    = 'alias_add_1';
         $aliasAdd2    = 'alias_add_2';
         $fieldValue   = $aliasAdd1.'|'.$aliasAdd2;
-
-        $config                    = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
-
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')

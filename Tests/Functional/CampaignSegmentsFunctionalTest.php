@@ -80,23 +80,8 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->activatePlugin();
         $this->leadModel = self::$container->get(LeadModel::class);
-    }
-
-    private function activatePlugin(): void
-    {
-        $this->client->request('GET', '/s/plugins/reload');
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'leuchtfeuermultiselect']);
-        if (empty($integration)) {
-            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
-            $integration = new Integration();
-            $integration->setName('leuchtfeuermultiselect');
-            $integration->setPlugin($plugin);
-        }
-        $integration->setIsPublished(true);
-        $this->em->persist($integration);
-        $this->em->flush();
+        $this->activatePlugin(true);
     }
 
     protected function beforeTearDown(): void
@@ -134,6 +119,23 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
             self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             $this->fieldId = null;
         }
+    }
+
+    private function activatePlugin($isPublished=true)
+    {
+        $this->client->request('GET', '/s/plugins/reload');
+        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
+        if (empty($integration)) {
+            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
+            $integration = new Integration();
+            $integration->setName('LeuchtfeuerMultiselect');
+            $integration->setPlugin($plugin);
+        }
+        $integration->setIsPublished($isPublished);
+        $this->em->persist($integration);
+        $this->em->flush();
     }
 
     public function testFunctionalMultiselectWithoutCreatingMissing(): void
