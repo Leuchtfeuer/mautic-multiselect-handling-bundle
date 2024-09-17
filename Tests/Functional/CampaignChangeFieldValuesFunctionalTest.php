@@ -144,7 +144,6 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
             self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             $this->fieldId = null;
         }
-
     }
 
     private function activatePlugin($isPublished=true)

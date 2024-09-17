@@ -68,9 +68,8 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->leadModel = self::$container->get(LeadModel::class);
-        $this->formModel = self::$container->get(FormModel::class);
         $this->activatePlugin(true);
+        $this->leadModel = self::$container->get(LeadModel::class);
         $this->client->followRedirects(false);
     }
 
@@ -111,7 +110,6 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         }
 
         if ($this->connection->createSchemaManager()->tablesExist("{$tablePrefix}form_results_1_submission")) {
-
             $this->connection->executeQuery("DROP TABLE {$tablePrefix}form_results_1_submission");
         }
     }

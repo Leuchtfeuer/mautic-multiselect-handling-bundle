@@ -12,7 +12,7 @@ class LeuchtfeuerMultiselectIntegration extends BasicIntegration implements Basi
 {
     use ConfigurationTrait;
 
-    public const INTEGRATION_NAME = 'leuchtfeuermultiselect';
+    public const INTEGRATION_NAME = 'LeuchtfeuerMultiselect';
     public const DISPLAY_NAME     = 'Multiselect Handling';
 
     public function getName(): string

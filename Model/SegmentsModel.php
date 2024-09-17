@@ -45,11 +45,7 @@ class SegmentsModel
 
         $segments = [];
         foreach ($segmentsSettings as $segmentAlias => $segmentName) {
-            $segmentsData = $this->listModel->getRepository()->getLists(null, $segmentAlias);
-
-            if (empty($segmentsData) && empty($createNew)) {
-                continue;
-            }
+            $segmentsData = $this->listModel->getUserLists($segmentAlias);
 
             if (1 !== count($segmentsData)) {
                 if ($createNew) {
