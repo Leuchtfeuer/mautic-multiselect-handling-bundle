@@ -88,6 +88,9 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             ->addViolation();
     }
 
+    /**
+     * @param array<string>|null $fieldValues
+     */
     private function checkValuesFromSameField(?array $fieldValues, string $fieldId, string $message): bool
     {
         if (null === $fieldValues) {

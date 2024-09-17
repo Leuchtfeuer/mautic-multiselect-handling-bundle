@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Functional;
 
-use JsonException;
 use Mautic\CampaignBundle\Entity\Campaign;
 use Mautic\CampaignBundle\Entity\Event;
 use Mautic\CampaignBundle\Entity\Lead as CampaignLead;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadRepository;
+use Mautic\PluginBundle\Entity\Integration;
+use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -27,6 +28,9 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 
     protected $useCleanupRollback = false;
 
+    /**
+     * @var array<array<string, mixed>>
+     */
     private array $contacts = [
         [
             'email'     => 'contact1@email.com',
@@ -63,6 +67,9 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<array<string, string>>
+     */
     private array $fieldData = [
         [
             'name'  => 'Field 1',
@@ -106,11 +113,26 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        $this->activatePlugin();
         $this->contactRepository = $this->em->getRepository(Lead::class);
     }
 
-    protected function tearDown(): void
+    private function activatePlugin(): void
+    {
+        $this->client->request('GET', '/s/plugins/reload');
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'leuchtfeuermultiselect']);
+        if (empty($integration)) {
+            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
+            $integration = new Integration();
+            $integration->setName('leuchtfeuermultiselect');
+            $integration->setPlugin($plugin);
+        }
+        $integration->setIsPublished(true);
+        $this->em->persist($integration);
+        $this->em->flush();
+    }
+
+    protected function beforeTearDown(): void
     {
         // Cleanup
         self::ensureKernelShutdown();
@@ -138,8 +160,6 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
             self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             $this->fieldId = null;
         }
-
-        parent::tearDown();
     }
 
     public function testApplyFieldChangesToMultiselect(): void
@@ -387,7 +407,7 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
         $clientResponse = $this->client->getResponse();
         try {
             $fieldResponse = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (\JsonException $e) {
             self::fail($e->getMessage());
         }
 
@@ -405,7 +425,7 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
         $clientResponse = $this->client->getResponse();
         try {
             $response = json_decode($clientResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (\JsonException $e) {
             self::fail($e->getMessage());
         }
 

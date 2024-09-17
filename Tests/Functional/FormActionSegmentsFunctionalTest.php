@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Functional;
 
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
-use Mautic\FormBundle\Model\FormModel;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\PluginBundle\Entity\Integration;
+use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +21,9 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     protected $useCleanupRollback = false;
 
+    /**
+     * @var array<array<string,mixed>>
+     */
     private array $contacts = [
         [
             'email'     => 'contact@email.com',
@@ -29,6 +33,9 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<array<string,string>>
+     */
     private array $segments = [
         [
             'name'        => 'API segment A',
@@ -48,6 +55,9 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<string,mixed>
+     */
     private array $created = [
         'segments'      => [],
         'contact'       => null,
@@ -58,14 +68,28 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        $this->activatePlugin();
         $this->leadModel = self::$container->get(LeadModel::class);
-        $this->formModel = self::$container->get(FormModel::class);
 
         $this->client->followRedirects(false);
     }
 
-    protected function tearDown(): void
+    private function activatePlugin(): void
+    {
+        $this->client->request('GET', '/s/plugins/reload');
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'leuchtfeuermultiselect']);
+        if (empty($integration)) {
+            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
+            $integration = new Integration();
+            $integration->setName('leuchtfeuermultiselect');
+            $integration->setPlugin($plugin);
+        }
+        $integration->setIsPublished(true);
+        $this->em->persist($integration);
+        $this->em->flush();
+    }
+
+    protected function beforeTearDown(): void
     {
         $tablePrefix = self::$container->getParameter('mautic.db_table_prefix');
 
@@ -100,9 +124,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
             $this->created['contact_field'] = null;
         }
 
-        parent::tearDown();
-
-        if ($this->connection->getSchemaManager()->tablesExist("{$tablePrefix}form_results_1_submission")) {
+        if ($this->connection->createSchemaManager()->tablesExist("{$tablePrefix}form_results_1_submission")) {
             $this->connection->executeQuery("DROP TABLE {$tablePrefix}form_results_1_submission");
         }
     }
@@ -424,7 +446,10 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         return $response['form']['id'];
     }
 
-    private function testCreateMultiselectField(array $segments)
+    /**
+     * @param array<array<string,string>> $segments
+     */
+    private function testCreateMultiselectField(array $segments): int
     {
         $list = [];
         foreach ($segments as $segment) {
@@ -451,7 +476,10 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         return $fieldResponse['field']['id'];
     }
 
-    private function testCreateSingleSelectField(array $segments)
+    /**
+     * @param array<array<string,string>> $segments
+     */
+    private function testCreateSingleSelectField(array $segments): int
     {
         $list = [];
         foreach ($segments as $segment) {
@@ -502,6 +530,9 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         ];
     }
 
+    /**
+     * @return array<mixed>
+     */
     private function createContact(): array
     {
         $this->client->request('POST', '/api/contacts/batch/new', $this->contacts);

@@ -12,6 +12,8 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\PluginBundle\Entity\Integration;
+use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -27,6 +29,9 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
     protected $useCleanupRollback = false;
 
+    /**
+     * @var array<int, array<string, string>>
+     */
     private array $contacts = [
         [
             'email'              => 'contact2@email.com',
@@ -35,6 +40,9 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<int, array<string, string>>
+     */
     private array $segments = [
         [
             'name'        => 'Add 1',
@@ -72,11 +80,26 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        $this->activatePlugin();
         $this->leadModel = self::$container->get(LeadModel::class);
     }
 
-    protected function tearDown(): void
+    private function activatePlugin(): void
+    {
+        $this->client->request('GET', '/s/plugins/reload');
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'leuchtfeuermultiselect']);
+        if (empty($integration)) {
+            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
+            $integration = new Integration();
+            $integration->setName('leuchtfeuermultiselect');
+            $integration->setPlugin($plugin);
+        }
+        $integration->setIsPublished(true);
+        $this->em->persist($integration);
+        $this->em->flush();
+    }
+
+    protected function beforeTearDown(): void
     {
         // Cleanup
         self::ensureKernelShutdown();
@@ -91,7 +114,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
         if (null !== $this->createdSegments) {
             foreach ($this->createdSegments as $segment) {
-                $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
+                $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete');
                 $clientResponse = $this->client->getResponse();
                 self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             }
@@ -111,8 +134,6 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
             self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             $this->fieldId = null;
         }
-
-        parent::tearDown();
     }
 
     public function testFunctionalMultiselectWithoutCreatingMissing(): void
@@ -288,7 +309,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     }
 
     /**
-     * @return mixed[]
+     * @return array<int,array<int>>
      */
     private function createSegments(): array
     {
@@ -317,7 +338,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ];
     }
 
-    private function testCreateSelectField(array $segments, bool $multiselect)
+    private function testCreateSelectField(array $segments, bool $multiselect): int
     {
         $list = [];
         foreach ($segments as $segment) {

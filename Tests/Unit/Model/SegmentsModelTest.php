@@ -45,6 +45,7 @@ class SegmentsModelTest extends TestCase
 
     /**
      * @param array<mixed> $properties
+     *
      * @dataProvider invalidProperties
      */
     public function testInvalidChoiceProperties(array $properties): void
@@ -79,6 +80,7 @@ class SegmentsModelTest extends TestCase
 
     /**
      * @param array<mixed> $segmentsData
+     *
      * @dataProvider invalidSegmentData
      */
     public function testInvalidSegmentsReturnsNull(array $segmentsData): void
@@ -210,6 +212,9 @@ class SegmentsModelTest extends TestCase
         ], $segmentsModel->getSegments($fieldId, true));
     }
 
+    /**
+     * @return array<array<bool>>
+     */
     public function trueFalse(): array
     {
         return [
@@ -218,6 +223,9 @@ class SegmentsModelTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array<mixed>>
+     */
     public function invalidProperties(): array
     {
         return [
@@ -227,6 +235,9 @@ class SegmentsModelTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array<mixed>>
+     */
     public function invalidSegmentData(): array
     {
         return [
