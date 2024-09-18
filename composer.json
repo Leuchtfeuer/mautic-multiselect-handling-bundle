@@ -7,8 +7,8 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.4",
-        "mautic/core-lib": "^4.0",
+        "php": "^8.1",
+        "mautic/core-lib": "^5.0",
         "mautic/plugin-social": "*",
         "ext-json": "*"
     },
@@ -33,11 +33,15 @@
     "repositories": [
         {
             "type": "git",
-            "url": "https://github.com/dennisameling/FOSOAuthServerBundle.git"
+            "url": "https://github.com/mautic/FOSOAuthServerBundle.git"
         },
         {
             "type": "git",
-            "url": "https://github.com/mautic/BazingaOAuthServerBundle.git"
+            "url": "https://github.com/mautic/SpBundle.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/mautic/SymfonyBridgeBundle.git"
         }
     ],
     "scripts": {
