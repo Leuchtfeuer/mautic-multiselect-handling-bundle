@@ -30,11 +30,12 @@ class FormActionTest extends TestCase
         $leadModel                 = $this->createMock(LeadModel::class);
         $segmentsModel             = $this->createMock(SegmentsModel::class);
         $event                     = $this->createMock(SubmissionEvent::class);
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -74,11 +75,12 @@ class FormActionTest extends TestCase
         $leadModel                 = $this->createMock(LeadModel::class);
         $segmentsModel             = $this->createMock(SegmentsModel::class);
         $event                     = $this->createMock(SubmissionEvent::class);
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -120,11 +122,12 @@ class FormActionTest extends TestCase
         $segmentsModel             = $this->createMock(SegmentsModel::class);
         $event                     = $this->createMock(SubmissionEvent::class);
         $action                    = $this->createMock(Action::class);
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -176,11 +179,12 @@ class FormActionTest extends TestCase
         $event                     = $this->createMock(SubmissionEvent::class);
         $action                    = $this->createMock(Action::class);
         $lead                      = $this->createMock(Lead::class);
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -224,6 +228,9 @@ class FormActionTest extends TestCase
         $formAction->onAction($event);
     }
 
+    /**
+     * @return array<array<mixed>>
+     */
     public function invalidActionProperties(): array
     {
         return [
@@ -248,11 +255,12 @@ class FormActionTest extends TestCase
         $fieldId                   = 123;
         $exceptionMessage          = 'Exception!';
         $actionProperties          = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '0'];
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -298,6 +306,9 @@ class FormActionTest extends TestCase
         $formAction->onAction($event);
     }
 
+    /**
+     * @return array<array<bool>>
+     */
     public function trueFalse(): array
     {
         return [
@@ -319,11 +330,12 @@ class FormActionTest extends TestCase
         $leadFieldAlias            = 'lead_field_alias';
         $fieldId                   = 123;
         $actionProperties          = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '0'];
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -385,11 +397,12 @@ class FormActionTest extends TestCase
         $fieldId                   = 112;
         $exceptionMessage          = 'Exception!';
         $actionProperties          = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '0'];
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -442,6 +455,9 @@ class FormActionTest extends TestCase
         $formAction->onAction($event);
     }
 
+    /**
+     * @return array<array<mixed>>
+     */
     public function invalidSegmentData(): array
     {
         return [
@@ -460,15 +476,16 @@ class FormActionTest extends TestCase
         $action                    = $this->createMock(Action::class);
         $lead                      = $this->createMock(Lead::class);
         $leadField                 = $this->createMock(LeadField::class);
+        $config                    = $this->createMock(Config::class);
         $leadFieldAlias            = 'field_alias';
         $fieldId                   = 1224;
         $exceptionMessage          = 'Exception!';
         $actionProperties          = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '0'];
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -531,6 +548,7 @@ class FormActionTest extends TestCase
         $action                       = $this->createMock(Action::class);
         $lead                         = $this->createMock(Lead::class);
         $leadField                    = $this->createMock(LeadField::class);
+        $config                       = $this->createMock(Config::class);
         $leadFieldAlias               = 'field_alias';
         $fieldId                      = 2333;
         $actionProperties             = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '1'];
@@ -546,7 +564,6 @@ class FormActionTest extends TestCase
         $removeSegment                = $this->createMock(LeadList::class);
         $otherSegment                 = $this->createMock(LeadList::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
@@ -652,11 +669,12 @@ class FormActionTest extends TestCase
         $removeSegmentAlias           = 'remove_alias';
         $removeSegment                = $this->createMock(LeadList::class);
         $otherSegment                 = $this->createMock(LeadList::class);
+        $config                       = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)
@@ -748,11 +766,12 @@ class FormActionTest extends TestCase
         $segment1Id                = '112';
         $segment2Alias             = 'existing_segment';
         $segment2Id                = '441';
+        $config                    = $this->createMock(Config::class);
 
-        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
         $event->expects(self::once())
             ->method('checkContext')
             ->with(FormSubscriber::ACTION)

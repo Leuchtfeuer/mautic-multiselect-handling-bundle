@@ -184,9 +184,7 @@ class ActionSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @param array<int|string> $values
-     *
-     * @return array<string>
+     * @return array<mixed>
      */
     private function getCurrentField(Lead $lead, int $fieldId): ?array
     {
@@ -211,9 +209,9 @@ class ActionSubscriber implements EventSubscriberInterface
     /**
      * @param array<int|string> $field
      *
-     * @return array<string>
+     * @return array<int,string>
      */
-    private function getFieldValue(array $field): ?array
+    private function getFieldValue(array $field): array
     {
         $currentValue = explode('|', $field['value'] ?? '');
 

@@ -29,6 +29,9 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
     protected $useCleanupRollback = false;
 
+    /**
+     * @var array<int, array<string, string>>
+     */
     private array $contacts = [
         [
             'email'              => 'contact2@email.com',
@@ -37,6 +40,9 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<int, array<string, string>>
+     */
     private array $segments = [
         [
             'name'        => 'Add 1',
@@ -74,7 +80,6 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->leadModel = self::$container->get(LeadModel::class);
         $this->activatePlugin(true);
     }
@@ -94,7 +99,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
         if (null !== $this->createdSegments) {
             foreach ($this->createdSegments as $segment) {
-                $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete', []);
+                $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete');
                 $clientResponse = $this->client->getResponse();
                 self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             }
@@ -116,7 +121,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         }
     }
 
-    private function activatePlugin($isPublished=true)
+    private function activatePlugin(bool $isPublished=true): void
     {
         $this->client->request('GET', '/s/plugins/reload');
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());
@@ -306,7 +311,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     }
 
     /**
-     * @return mixed[]
+     * @return array<int,array<int>>
      */
     private function createSegments(): array
     {
@@ -335,7 +340,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ];
     }
 
-    private function testCreateSelectField(array $segments, bool $multiselect)
+    private function testCreateSelectField(array $segments, bool $multiselect): int
     {
         $list = [];
         foreach ($segments as $segment) {

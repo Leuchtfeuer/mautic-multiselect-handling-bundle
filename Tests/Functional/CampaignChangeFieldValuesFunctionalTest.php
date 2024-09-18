@@ -28,6 +28,9 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 
     protected $useCleanupRollback = false;
 
+    /**
+     * @var array<array<string, mixed>>
+     */
     private array $contacts = [
         [
             'email'     => 'contact1@email.com',
@@ -64,6 +67,9 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
         ],
     ];
 
+    /**
+     * @var array<array<string, string>>
+     */
     private array $fieldData = [
         [
             'name'  => 'Field 1',
@@ -107,7 +113,6 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         $this->contactRepository = $this->em->getRepository(Lead::class);
         $this->activatePlugin(true);
     }
@@ -141,7 +146,7 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
         }
     }
 
-    private function activatePlugin($isPublished=true)
+    private function activatePlugin(bool $isPublished = true ): void
     {
         $this->client->request('GET', '/s/plugins/reload');
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());

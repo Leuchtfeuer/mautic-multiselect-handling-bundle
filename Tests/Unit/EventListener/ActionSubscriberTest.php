@@ -77,11 +77,13 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageFieldActionMissingFieldInContact(): void
     {
-        $fieldId = 2376;
-        $config  = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
+        $fieldId = 2376;
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -117,12 +119,14 @@ class ActionSubscriberTest extends TestCase
      */
     public function testManageFieldActionManagesMultiselectFieldInContact(?string $fieldValue, array $expectedFieldValues): void
     {
-        $fieldId    = 2376;
-        $fieldAlias = 'field_alias';
-        $config     = $this->createMock(Config::class);
+        $config                    = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -177,13 +181,15 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageFieldActionManagesSelectFieldInContact(): void
     {
-        $fieldId    = 2376;
-        $fieldAlias = 'field_alias';
-        $fieldValue = 'selected';
-        $config     = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'selected';
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -226,13 +232,15 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageFieldActionAddsLastToSelectFieldInContact(): void
     {
-        $fieldId    = 2376;
-        $fieldAlias = 'field_alias';
-        $fieldValue = 'selected';
-        $config     = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'selected';
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -275,13 +283,15 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageFieldActionRemovesFromSelectFieldInContact(): void
     {
-        $fieldId    = 2376;
-        $fieldAlias = 'field_alias';
-        $fieldValue = 'alias_remove_1';
-        $config     = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'alias_remove_1';
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -407,11 +417,12 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageSegmentsActionMissingFieldInContact(): void
     {
-        $fieldId = 2376;
-        $config  = $this->createMock(Config::class);
+        $config                    = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+        $fieldId = 2376;
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -446,13 +457,15 @@ class ActionSubscriberTest extends TestCase
 
     public function testManageSegmentsActionInvalidSegments(): void
     {
-        $fieldId    = 2376;
-        $fieldAlias = 'field_alias';
-        $fieldValue = 'alias_remove_1|alias_add_1|alias_remove_2|other';
-        $config     = $this->createMock(Config::class);
+        $config                    = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+
+        $fieldId    = 2376;
+        $fieldAlias = 'field_alias';
+        $fieldValue = 'alias_remove_1|alias_add_1|alias_remove_2|other';
+
         $lead = $this->createMock(Lead::class);
         $lead->expects(self::once())
             ->method('getFields')
@@ -506,8 +519,7 @@ class ActionSubscriberTest extends TestCase
         $aliasAdd1    = 'alias_add_1';
         $aliasAdd2    = 'alias_add_2';
         $fieldValue   = $aliasAdd1.'|'.$aliasAdd2;
-
-        $config = $this->createMock(Config::class);
+        $config       = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
@@ -585,8 +597,7 @@ class ActionSubscriberTest extends TestCase
         $aliasAdd1    = 'alias_add_1';
         $aliasAdd2    = 'alias_add_2';
         $fieldValue   = $aliasAdd1.'|'.$aliasAdd2;
-
-        $config = $this->createMock(Config::class);
+        $config       = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);

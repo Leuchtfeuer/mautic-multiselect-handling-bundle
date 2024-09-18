@@ -212,6 +212,9 @@ class SegmentsModelTest extends TestCase
         ], $segmentsModel->getSegments($fieldId, true));
     }
 
+    /**
+     * @return array<array<bool>>
+     */
     public function trueFalse(): array
     {
         return [
@@ -220,6 +223,9 @@ class SegmentsModelTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array<mixed>>
+     */
     public function invalidProperties(): array
     {
         return [
@@ -229,6 +235,9 @@ class SegmentsModelTest extends TestCase
         ];
     }
 
+    /**
+     * @return array<array<mixed>>
+     */
     public function invalidSegmentData(): array
     {
         return [
