@@ -30,9 +30,9 @@ return [
                 'class'     => MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config::class,
                 'arguments' => [
                     'mautic.integrations.helper',
-                    ],
                 ],
             ],
+        ],
         'events' => [
             MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber::class => [
                 'class'     => MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber::class,
