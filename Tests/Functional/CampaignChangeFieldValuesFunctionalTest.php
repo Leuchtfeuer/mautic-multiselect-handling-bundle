@@ -8,10 +8,13 @@ use Mautic\CampaignBundle\Entity\Campaign;
 use Mautic\CampaignBundle\Entity\Event;
 use Mautic\CampaignBundle\Entity\Lead as CampaignLead;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
+use Mautic\FormBundle\Entity\FieldRepository;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadRepository;
+use Mautic\LeadBundle\Model\FieldModel;
 use Mautic\PluginBundle\Entity\Integration;
 use Mautic\PluginBundle\Entity\Plugin;
+use Mautic\UserBundle\Entity\User;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -110,18 +113,25 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 
     private ?int $fieldId = null;
 
+    private FieldModel $fieldModel;
+
+    private FieldRepository $fieldRepository;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->contactRepository = $this->em->getRepository(Lead::class);
+        $this->fieldModel = self::getContainer()->get(FieldModel::class);
         $this->activatePlugin(true);
+
     }
 
     protected function beforeTearDown(): void
     {
         self::ensureKernelShutdown();
         $this->setUpSymfony($this->configParams);
-
+        $user = $this->em->getRepository(User::class)->findOneBy(['username' => 'admin']);
+        $this->loginUser($user);
         if (null !== $this->contactIds) {
             foreach ($this->contactIds as $contactId) {
                 $this->client->request(Request::METHOD_DELETE, '/api/contacts/'.$contactId.'/delete', []);
@@ -165,6 +175,7 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 
     public function testApplyFieldChangesToMultiselect(): void
     {
+
         $fieldId  = $this->fieldId = $this->createField(true);
         $contacts = $this->contactIds = $this->createContacts();
         $campaign = $this->createCampaign(
@@ -208,6 +219,7 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
             implode('|', [$this->fieldData[0]['alias'], $this->fieldData[1]['alias']]),
             $contactA->getFieldValue(self::FIELD_NAME_MULTISELECT, 'core')
         );
+
         self::assertSame(
             implode('|', [$this->fieldData[0]['alias'], 'other', $this->fieldData[1]['alias']]),
             $contactB->getFieldValue(self::FIELD_NAME_MULTISELECT, 'core')
@@ -388,6 +400,12 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 
     private function createField(bool $multiselect): int
     {
+        $alias = $multiselect ? self::FIELD_NAME_MULTISELECT : self::FIELD_NAME_SELECT;
+//        $checkField = $this->fieldModel->getRepository()->findOneBy(['alias' => $alias]);
+//        if (null !== $checkField) {
+//            return $checkField->getId();
+//        }
+
         $list = [];
         foreach ($this->fieldData as $setting) {
             $list[] = ['label' => $setting['name'], 'value' => $setting['alias']];
@@ -395,7 +413,8 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 
         $payload = [
             'label'               => 'Manage multiselect',
-            'alias'               => $multiselect ? self::FIELD_NAME_MULTISELECT : self::FIELD_NAME_SELECT,
+//            'alias'               => $multiselect ? self::FIELD_NAME_MULTISELECT : self::FIELD_NAME_SELECT,
+            'alias'               => $alias,
             'type'                => $multiselect ? 'multiselect' : 'select',
             'isPubliclyUpdatable' => true,
             'isUniqueIdentifier'  => false,
@@ -411,7 +430,6 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
         } catch (\JsonException $e) {
             self::fail($e->getMessage());
         }
-
         self::assertSame(Response::HTTP_CREATED, $clientResponse->getStatusCode(), $clientResponse->getContent());
 
         return $fieldResponse['field']['id'];
@@ -422,6 +440,13 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
      */
     private function createContacts(): array
     {
+        $checkContacts = $this->contactRepository->findBy(['email' => array_column($this->contacts, 'email')]);
+        if (count($checkContacts) === 5) {
+            return array_map(
+                static fn(Lead $contact) => $contact->getId(),
+                $checkContacts
+            );
+        }
         $this->client->request('POST', '/api/contacts/batch/new', $this->contacts);
         $clientResponse = $this->client->getResponse();
         try {

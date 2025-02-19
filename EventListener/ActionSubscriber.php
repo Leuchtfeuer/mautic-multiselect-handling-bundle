@@ -81,7 +81,7 @@ class ActionSubscriber implements EventSubscriberInterface
         if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
-
+        
         $currentValue = $this->getFieldValue($field);
 
         foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {

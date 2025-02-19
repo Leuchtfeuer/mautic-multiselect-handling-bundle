@@ -34,7 +34,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
      *
      * @return ChoiceListInterface<string, int>
      */
-    public function loadChoiceList($value = null)
+    public function loadChoiceList($value = null): ChoiceListInterface
     {
         if (null !== $this->choiceList) {
             return $this->choiceList;
@@ -46,6 +46,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
         }
 
         return $this->choiceList = new ArrayChoiceList($choices, $value);
+
     }
 
     /**
