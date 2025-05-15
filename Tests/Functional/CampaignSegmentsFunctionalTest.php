@@ -137,11 +137,11 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->client->request('GET', '/s/plugins/reload');
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'Leuchtfeuermultiselecthandling']);
         if (empty($integration)) {
             $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
             $integration = new Integration();
-            $integration->setName('LeuchtfeuerMultiselect');
+            $integration->setName('Leuchtfeuermultiselecthandling');
             $integration->setPlugin($plugin);
         }
         $integration->setIsPublished($isPublished);
