@@ -46,7 +46,6 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
         }
 
         return $this->choiceList = new ArrayChoiceList($choices, $value);
-
     }
 
     /**

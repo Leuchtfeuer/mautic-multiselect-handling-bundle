@@ -91,7 +91,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
             $this->assertIsArray($this->created['contact']);
             $this->assertArrayHasKey('id', $this->created['contact']);
             $this->assertIsInt($this->created['contact']['id']);
-            $contactId = (int)$this->created['contact']['id'];
+            $contactId = (int) $this->created['contact']['id'];
             $this->client->request(Request::METHOD_DELETE, "/api/contacts/$contactId/delete", []);
             $clientResponse = $this->client->getResponse();
             $this->assertNotFalse($clientResponse->getContent());
@@ -223,8 +223,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
         /** @var LeadListRepository $leadListRepository */
         $leadListRepository = $this->leadModel->getLeadListRepository();
-        /** @var mixed $lists */
-        $lists = $leadListRepository->getLeadLists($contact['id']);
+        $lists              = $leadListRepository->getLeadLists($contact['id']);
         $this->assertIsArray($lists);
         self::assertCount(3, $lists);
         $list = array_pop($lists);
@@ -265,7 +264,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsInt($segments[3]['id']);
         $this->assertArrayHasKey('alias', $segments[3]);
         $this->assertIsString($segments[3]['alias']);
-        $selectedSegments = $segments;
+        $selectedSegments          = $segments;
         $this->created['segments'] = $segments;
         unset($selectedSegments[1]);
         $createdSegmentName  = 'Created segment name';
@@ -364,7 +363,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsInt($segments[3]['id']);
         $this->assertArrayHasKey('alias', $segments[3]);
         $this->assertIsString($segments[3]['alias']);
-        $selectedSegments = $segments;
+        $selectedSegments          = $segments;
         $this->created['segments'] = $segments;
         unset($selectedSegments[1]);
         $createdSegmentAlias = 'createdsegmentname';
@@ -451,7 +450,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsInt($segments[3]['id']);
         $this->assertArrayHasKey('alias', $segments[3]);
         $this->assertIsString($segments[3]['alias']);
-        $selectedSegments = $segments;
+        $selectedSegments          = $segments;
         $this->created['segments'] = $segments;
         unset($selectedSegments[1]);
         $fieldId = $this->created['contact_field'] = $this->testCreateSingleSelectField($selectedSegments);
@@ -529,7 +528,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsInt($segments[3]['id']);
         $this->assertArrayHasKey('alias', $segments[3]);
         $this->assertIsString($segments[3]['alias']);
-        $selectedSegments = $segments;
+        $selectedSegments          = $segments;
         $this->created['segments'] = $segments;
         unset($selectedSegments[1]);
         $createdSegmentName  = 'Created segment name';
@@ -590,7 +589,6 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     public function testFunctionalSingleSelectWithoutCreatingMissingButMissingSegment(): void
     {
-
         $segments = $this->createSegments();
         $this->assertIsArray($segments);
         $this->assertCount(4, $segments);
@@ -614,7 +612,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsInt($segments[3]['id']);
         $this->assertArrayHasKey('alias', $segments[3]);
         $this->assertIsString($segments[3]['alias']);
-        $selectedSegments = $segments;
+        $selectedSegments          = $segments;
         $this->created['segments'] = $segments;
         unset($selectedSegments[1]);
         $createdSegmentAlias = 'createdsegmentname';
@@ -729,6 +727,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsArray($response['form']);
         $this->assertArrayHasKey('id', $response['form']);
         $this->assertIsInt($response['form']['id']);
+
         return $response['form']['id'];
     }
 
@@ -764,6 +763,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsArray($fieldResponse['field']);
         $this->assertArrayHasKey('id', $fieldResponse['field']);
         $this->assertIsInt($fieldResponse['field']['id']);
+
         return $fieldResponse['field']['id'];
     }
 
@@ -800,6 +800,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->assertIsArray($fieldResponse['field']);
         $this->assertArrayHasKey('id', $fieldResponse['field']);
         $this->assertIsInt($fieldResponse['field']['id']);
+
         return $fieldResponse['field']['id'];
     }
 
