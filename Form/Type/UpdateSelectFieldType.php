@@ -19,13 +19,10 @@ class UpdateSelectFieldType extends AbstractType
     public const ADD    = 'multiselect_add';
     public const REMOVE = 'multiselect_remove';
 
-    private LeadFieldChoiceLoader $leadFieldChoiceLoader;
-    private LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader;
-
-    public function __construct(LeadFieldChoiceLoader $leadFieldChoiceLoader, LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader)
-    {
-        $this->leadFieldChoiceLoader       = $leadFieldChoiceLoader;
-        $this->leadFieldValuesChoiceLoader = $leadFieldValuesChoiceLoader;
+    public function __construct(
+        private LeadFieldChoiceLoader $leadFieldChoiceLoader,
+        private LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader,
+    ) {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

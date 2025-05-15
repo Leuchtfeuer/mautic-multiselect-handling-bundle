@@ -25,23 +25,13 @@ class FormAction implements EventSubscriberInterface
 
     public const NON_EXISTING_LIST = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_non_existing_list';
 
-    private Config $config;
-
-    private TranslatorInterface $translator;
-
-    private LeadFieldChoiceLoader $choiceLoader;
-
-    private LeadModel $leadModel;
-
-    private SegmentsModel $segmentsModel;
-
-    public function __construct(Config $config, LeadFieldChoiceLoader $choiceLoader, TranslatorInterface $translator, LeadModel $leadModel, SegmentsModel $segmentsModel)
-    {
-        $this->config           = $config;
-        $this->choiceLoader     = $choiceLoader;
-        $this->translator       = $translator;
-        $this->leadModel        = $leadModel;
-        $this->segmentsModel    = $segmentsModel;
+    public function __construct(
+        private Config $config,
+        private LeadFieldChoiceLoader $choiceLoader,
+        private TranslatorInterface $translator,
+        private LeadModel $leadModel,
+        private SegmentsModel $segmentsModel,
+    ) {
     }
 
     /**
