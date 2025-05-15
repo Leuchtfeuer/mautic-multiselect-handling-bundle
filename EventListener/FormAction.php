@@ -83,9 +83,9 @@ class FormAction implements EventSubscriberInterface
             if (null === $segmentsData = $this->segmentsModel->getSegments($actionProperties[SettingsType::FIELD], (bool) $actionProperties[SettingsType::CHECKBOX])) {
                 throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
             }
-        } catch (InvalidSetupException $e) {
+        } catch (InvalidSetupException) {
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
-        } catch (NonExistingListException $e) {
+        } catch (NonExistingListException) {
             throw new ValidationException($this->translator->trans(self::NON_EXISTING_LIST));
         }
 

@@ -14,11 +14,8 @@ class FormSubscriber implements EventSubscriberInterface
 {
     public const ACTION = 'plugin.multiselectHandlingManageAction';
 
-    private Config $config;
-
-    public function __construct(Config $config)
+    public function __construct(private Config $config)
     {
-        $this->config = $config;
     }
 
     public static function getSubscribedEvents(): array
