@@ -15,8 +15,6 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 {
     private ?ChoiceListInterface $choiceList = null;
 
-    private LeadFieldRepository $leadFieldRepository;
-
     /**
      * @var array<LeadField>
      */
@@ -24,9 +22,8 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 
     private ?bool $loadMultiSelect = null;
 
-    public function __construct(LeadFieldRepository $leadFieldRepository)
+    public function __construct(private LeadFieldRepository $leadFieldRepository)
     {
-        $this->leadFieldRepository = $leadFieldRepository;
     }
 
     /**
@@ -34,7 +31,7 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
      *
      * @return ChoiceListInterface<string, int>
      */
-    public function loadChoiceList($value = null)
+    public function loadChoiceList($value = null): ChoiceListInterface
     {
         if (null !== $this->choiceList) {
             return $this->choiceList;

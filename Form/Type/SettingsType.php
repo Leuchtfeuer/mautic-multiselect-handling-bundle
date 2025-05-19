@@ -16,11 +16,8 @@ class SettingsType extends AbstractType
     public const FIELD    = 'field';
     public const CHECKBOX = 'create_missing';
 
-    private LeadFieldChoiceLoader $choiceLoader;
-
-    public function __construct(LeadFieldChoiceLoader $choiceLoader)
+    public function __construct(private LeadFieldChoiceLoader $choiceLoader)
     {
-        $this->choiceLoader = $choiceLoader;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
