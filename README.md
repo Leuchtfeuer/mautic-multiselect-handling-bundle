@@ -1,4 +1,4 @@
-## Multiselect Handling by Leuchtfeuer
+## Multiselect Handling by Leuchtfeuer - Mautic 5 Version
 Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect”. Handling of fieldtype "Select" was introduced in later version, thus the naming "multiselect".
 
 
