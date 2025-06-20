@@ -49,6 +49,7 @@ class FormAction implements EventSubscriberInterface
      */
     public function onAction(SubmissionEvent $event): void
     {
+
         if (!$this->config->isPublished()) {
             return;
         }
