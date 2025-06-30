@@ -1,9 +1,17 @@
 {
     "name": "leuchtfeuer/mautic-multiselect-handling",
-    "description": "TODO",
-    "license": "TODO",
+    "description": "A Mautic plugin that improves the handling of multiselect contact fields in forms and campaigns.",
+    "license": "GPL-3.0-or-later",
     "type": "mautic-plugin",
-    "homepage": "https://www.Leuchtfeuer.com",
+    "authors": [
+        {
+          "name": "Leuchtfeuer Digital Marketing GmbH",
+          "email": "mautic-plugins@Leuchtfeuer.com",
+          "homepage": "https://Leuchtfeuer.com/mautic/",
+          "role": "Developer"
+        }
+      ],
+    "keywords": ["mautic","plugin","integration","multiselect"],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
