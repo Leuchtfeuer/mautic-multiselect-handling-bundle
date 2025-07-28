@@ -7,18 +7,17 @@ namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener;
 use Mautic\FormBundle\Event\FormBuilderEvent;
 use Mautic\FormBundle\FormEvents;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FormSubscriber implements EventSubscriberInterface
 {
-    public const ACTION = 'plugin.multiselectHandlingManageAction';
+    public const ACTION                     = 'plugin.multiselectHandlingManageAction';
+    public const ACTION_MULTISELECT_CONTACT = 'plugin.multiselectHandlingContactFieldAction';
 
-    private Config $config;
-
-    public function __construct(Config $config)
+    public function __construct(private Config $config)
     {
-        $this->config = $config;
     }
 
     public static function getSubscribedEvents(): array
@@ -47,6 +46,25 @@ class FormSubscriber implements EventSubscriberInterface
 
                 // Callback method to be executed after the submission
                 'eventName'    => FormAction::ACTION,
+            ]
+        );
+
+        $event->addSubmitAction(
+            self::ACTION_MULTISELECT_CONTACT,
+            [
+                // Label to group by in the dropdown
+                'group'       => 'mautic.plugin.multiselect_handling.actions.group',
+
+                // Label to list by in the dropdown
+                'label'           => 'mautic.plugin.multiselect_handling.actions.contact_field_action',
+                'description'     => 'mautic.plugin.multiselect_handling.actions.contact_field_action_description',
+                'formType'        => UpdateSelectFieldType::class,
+                'formTypeOptions' => [
+                    'multiple' => true,
+                ],
+
+                // Callback method to be executed after the submission
+                'eventName'    => FormAction::ACTION_FORM,
             ]
         );
     }

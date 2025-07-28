@@ -25,17 +25,8 @@ class ActionSubscriber implements EventSubscriberInterface
     public const MANAGE_SELECT_FIELD_ACTION      = 'plugin.multiselect_handling.manage_1_field_action';
     public const MANAGE_SEGMENTS_ACTION          = 'plugin.multiselect_handling.manage_segments_action';
 
-    private Config $config;
-
-    private LeadModel $leadModel;
-
-    private SegmentsModel $segmentsModel;
-
-    public function __construct(Config $config, LeadModel $leadModel, SegmentsModel $segmentsModel)
+    public function __construct(private Config $config, private LeadModel $leadModel, private SegmentsModel $segmentsModel)
     {
-        $this->config        = $config;
-        $this->leadModel     = $leadModel;
-        $this->segmentsModel = $segmentsModel;
     }
 
     public function onManageFieldAction(CampaignExecutionEvent $event): void

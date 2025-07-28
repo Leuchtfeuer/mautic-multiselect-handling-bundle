@@ -23,6 +23,7 @@ class ActionSubscriberTest extends TestCase
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::exactly(2))
             ->method('checkContext')
@@ -50,6 +51,7 @@ class ActionSubscriberTest extends TestCase
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::exactly(2))
             ->method('checkContext')
@@ -88,7 +90,7 @@ class ActionSubscriberTest extends TestCase
         $lead->expects(self::once())
             ->method('getFields')
             ->willReturn(['core' => []]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -134,7 +136,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'multiselect'],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -167,6 +169,9 @@ class ActionSubscriberTest extends TestCase
         $subscriber->onManageFieldAction($event);
     }
 
+    /**
+     * @return array<int, array<int, array<int, string>|string|null>>
+     */
     public function manageFieldProvider(): array
     {
         return [
@@ -197,7 +202,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'select'],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -248,7 +253,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'select'],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -299,7 +304,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias, 'type' => 'select'],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -338,6 +343,7 @@ class ActionSubscriberTest extends TestCase
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -374,6 +380,7 @@ class ActionSubscriberTest extends TestCase
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -427,7 +434,7 @@ class ActionSubscriberTest extends TestCase
         $lead->expects(self::once())
             ->method('getFields')
             ->willReturn(['core' => []]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -473,7 +480,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -530,7 +537,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')
@@ -608,7 +615,7 @@ class ActionSubscriberTest extends TestCase
                 ['id' => '22'],
                 ['id' => (string) $fieldId, 'value' => $fieldValue, 'alias' => $fieldAlias],
             ]]);
-
+        /** @phpstan-ignore-next-line */
         $event = $this->createMock(CampaignExecutionEvent::class);
         $event->expects(self::once())
             ->method('checkContext')

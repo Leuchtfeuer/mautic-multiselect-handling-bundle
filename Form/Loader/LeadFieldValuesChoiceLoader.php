@@ -15,8 +15,6 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 {
     private ?ChoiceListInterface $choiceList = null;
 
-    private LeadFieldRepository $leadFieldRepository;
-
     /**
      * @var array<LeadField>
      */
@@ -24,9 +22,8 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 
     private ?bool $loadMultiSelect = null;
 
-    public function __construct(LeadFieldRepository $leadFieldRepository)
+    public function __construct(private LeadFieldRepository $leadFieldRepository)
     {
-        $this->leadFieldRepository = $leadFieldRepository;
     }
 
     /**
@@ -166,13 +163,20 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     private function getMultiselectValues(LeadField $field): array
     {
         $properties = $field->getProperties();
-        if (!isset($properties['list']) || !is_array($properties['list']) || 0 === count($properties['list'])) {
+        if (
+            !isset($properties['list'])
+            || !is_array($properties['list'])
+            || 0 === count($properties['list'])
+        ) {
             return [];
         }
 
         $id     = $field->getId();
         $values = [];
         foreach ($properties['list'] as $property) {
+            if (!isset($property['value']) || !isset($property['label'])) {
+                continue;
+            }
             $values[$id.'-'.$property['value']] = [
                 'id'    => $id,
                 'name'  => $property['label'],

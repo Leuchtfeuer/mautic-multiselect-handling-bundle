@@ -3,7 +3,7 @@
 return [
     'name'        => 'Multiselect Handling by Leuchtfeuer',
     'description' => 'Provides custom actions to manage multiselect fields.',
-    'version'     => '3.0.3',
+    'version'     => '3.1.3',
     'author'      => 'Leuchtfeuer Digital Marketing GmbH',
     'services'    => [
         'other' => [

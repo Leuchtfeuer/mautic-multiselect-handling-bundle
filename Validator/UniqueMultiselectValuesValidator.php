@@ -21,7 +21,16 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             throw new UnexpectedTypeException($value, 'array');
         }
 
-        if (!isset($value['properties'][UpdateSelectFieldType::FIELD])) {
+        $properties = null;
+        if (isset($value['properties'])) {
+            $properties = $value['properties'];
+        }
+
+        if (isset($value[UpdateSelectFieldType::FIELD]) && null === $properties) {
+            $properties = $value;
+        }
+
+        if (!isset($properties[UpdateSelectFieldType::FIELD])) {
             throw new UnexpectedTypeException(null, 'string');
         }
 
@@ -29,11 +38,12 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             UpdateSelectFieldType::ADD    => [],
             UpdateSelectFieldType::REMOVE => [],
         ];
+
         foreach ($fields as $key => $item) {
-            if (isset($value['properties'][$key])) {
-                if (is_string($value['properties'][$key])) {
-                    if ('' !== $value['properties'][$key]) {
-                        $fields[$key] = [$value['properties'][$key]];
+            if (isset($properties[$key])) {
+                if (is_string($properties[$key])) {
+                    if ('' !== $properties[$key]) {
+                        $fields[$key] = [$properties[$key]];
                     } else {
                         $fields[$key] = [];
                     }
@@ -41,8 +51,8 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
                     continue;
                 }
 
-                if (is_array($value['properties'][$key])) {
-                    $fields[$key] = $value['properties'][$key];
+                if (is_array($properties[$key])) {
+                    $fields[$key] = $properties[$key];
                     continue;
                 }
 
@@ -63,7 +73,7 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
         foreach ([UpdateSelectFieldType::ADD, UpdateSelectFieldType::REMOVE] as $fieldName) {
             // check if the value (multi is in array) and is in the same field and add the validation message otherwise
             // stop adding messages if an error found, otherwise add the violation of wrong field value type
-            if ($this->checkValuesFromSameField($fields[$fieldName], $value['properties'][UpdateSelectFieldType::FIELD], $constraint->messageNotSameField)) {
+            if ($this->checkValuesFromSameField($fields[$fieldName], (int) $properties[UpdateSelectFieldType::FIELD], $constraint->messageNotSameField)) {
                 continue;
             }
 
@@ -91,7 +101,7 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
     /**
      * @param array<string>|null $fieldValues
      */
-    private function checkValuesFromSameField(?array $fieldValues, string $fieldId, string $message): bool
+    private function checkValuesFromSameField(?array $fieldValues, int $fieldId, string $message): bool
     {
         if (null === $fieldValues) {
             return true;
@@ -100,7 +110,7 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
         foreach ($fieldValues as $item) {
             $value = explode('-', $item);
 
-            if ($fieldId !== $value[0]) {
+            if ($fieldId !== (int) $value[0]) {
                 $this->context->buildViolation($message)
                     ->addViolation();
 
