@@ -7,7 +7,6 @@ use Mautic\CoreBundle\Controller\AjaxController as CommonAjaxController;
 use Mautic\CoreBundle\Factory\MauticFactory;
 use Mautic\CoreBundle\Factory\ModelFactory;
 use Mautic\CoreBundle\Helper\CoreParametersHelper;
-use Mautic\CoreBundle\Helper\InputHelper;
 use Mautic\CoreBundle\Helper\UserHelper;
 use Mautic\CoreBundle\Security\Permissions\CorePermissions;
 use Mautic\CoreBundle\Service\FlashBag;
@@ -21,7 +20,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class AjaxController extends CommonAjaxController
 {
     public function __construct(
-        private DateHelper $dateHelper,
         ManagerRegistry $doctrine,
         MauticFactory $factory,
         ModelFactory $modelFactory,
@@ -33,19 +31,18 @@ class AjaxController extends CommonAjaxController
         RequestStack $requestStack,
         CorePermissions $security,
         private FieldModel $fieldModel,
-
     ) {
         parent::__construct($doctrine, $factory, $modelFactory, $userHelper, $coreParametersHelper, $dispatcher, $translator, $flashBag, $requestStack, $security);
     }
+
     public function getMultiselectOptionsAction(Request $request): \Symfony\Component\HttpFoundation\JsonResponse
     {
-        // /s/ajax?action=plugin:LeuchtfeuerCompanySegments:getCompaniesCount'
-        $id = $request->get('id');
+        $id          = $request->get('id');
         $fieldEntity = $this->fieldModel->getEntity($id);
         if (!$fieldEntity) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field entity not found']);
         }
-        if (!$fieldEntity->getType() || $fieldEntity->getType() !== 'multiselect') {
+        if (!$fieldEntity->getType() || 'multiselect' !== $fieldEntity->getType()) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field is not a multiselect']);
         }
         if (!$fieldEntity->getProperties()) {
@@ -62,7 +59,7 @@ class AjaxController extends CommonAjaxController
             $list[$key]['label'] = '('.$fieldEntity->getName().') '.$value['label'];
             $list[$key]['value'] = $fieldEntity->getId().'-'.$value['label'];
         }
-        return $this->sendJsonResponse(['success' => 1, 'data' => $list]);
 
+        return $this->sendJsonResponse(['success' => 1, 'data' => $list]);
     }
 }

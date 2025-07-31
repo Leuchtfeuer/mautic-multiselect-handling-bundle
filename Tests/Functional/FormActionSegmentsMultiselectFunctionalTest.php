@@ -64,28 +64,24 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
             'firstname'                  => 'Robert A.',
             'lastname'                   => 'Heinlein',
             self::FIELD_NAME_MULTISELECT => ['1field', '4field', '2other'],
-            //            self::FIELD_NAME_SELECT      => 'field1',
         ],
         [
             'email'                      => 'contact3@email.com',
             'firstname'                  => 'Arthur C.',
             'lastname'                   => 'Clarke',
             self::FIELD_NAME_MULTISELECT => ['1field', '2other'],
-            //            self::FIELD_NAME_SELECT      => 'other2',
         ],
         [
             'email'                      => 'contact4@email.com',
             'firstname'                  => 'Jonathan',
             'lastname'                   => 'Dafis',
             self::FIELD_NAME_MULTISELECT => ['4field', '3other'],
-            //            self::FIELD_NAME_SELECT      => 'field4',
         ],
         [
             'email'                      => 'contact5@email.com',
             'firstname'                  => 'Grzegorz',
             'lastname'                   => 'Brzeczyszczykiewicz',
             self::FIELD_NAME_MULTISELECT => ['4field', '3field'],
-            //            self::FIELD_NAME_SELECT      => 'field3',
         ],
     ];
 

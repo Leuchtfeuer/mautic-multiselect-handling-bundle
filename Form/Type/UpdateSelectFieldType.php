@@ -28,12 +28,12 @@ class UpdateSelectFieldType extends AbstractType
         $this->leadFieldChoiceLoader->setType($options['multiple']);
         $this->leadFieldValuesChoiceLoader->setType($options['multiple']);
         $fieldList = $this->leadFieldChoiceLoader->loadChoiceList()->getOriginalKeys();
-        if ($options['data'] == null && !empty($fieldList)) {
+        if (null == $options['data'] && !empty($fieldList)) {
             $flipFieldList = array_flip($fieldList);
-            $firstField = reset($flipFieldList);
-            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int)$firstField);
-        }elseif(!empty($options['data']) && isset($options['data'][self::FIELD]) && $options['data'][self::FIELD] > 0) {
-            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int)$options['data'][self::FIELD]);
+            $firstField    = reset($flipFieldList);
+            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $firstField);
+        } elseif (!empty($options['data']) && isset($options['data'][self::FIELD]) && $options['data'][self::FIELD] > 0) {
+            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $options['data'][self::FIELD]);
         }
         $builder->add(self::FIELD, ChoiceType::class, [
             'label'         => 'mautic.plugin.multiselect_handling.field_action.managed_field',
@@ -44,7 +44,7 @@ class UpdateSelectFieldType extends AbstractType
             ],
             'label_attr' => ['class' => 'control-label'],
             'attr'       => [
-                'class' => 'form-control',
+                'class'    => 'form-control',
                 'onchange' => 'Mautic.getOptionsFromField(this)',
             ],
             'multiple' => false,

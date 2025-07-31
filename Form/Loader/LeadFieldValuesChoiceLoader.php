@@ -145,8 +145,7 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
             return [$this->leadFieldRepository->getEntity($this->defaultFieldId)];
         }
 
-        if (null === $this->loadMultiSelect ) {
-
+        if (null === $this->loadMultiSelect) {
             return $this->fields = array_merge(
                 $this->leadFieldRepository->getFieldsByType('multiselect'),
                 $this->leadFieldRepository->getFieldsByType('select')

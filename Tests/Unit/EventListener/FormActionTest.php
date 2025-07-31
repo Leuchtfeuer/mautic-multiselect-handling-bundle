@@ -846,7 +846,7 @@ class FormActionTest extends TestCase
     public function testSubscribedEvents(): void
     {
         self::assertSame([
-            FormAction::ACTION   => 'onAction',
+            FormAction::ACTION        => 'onAction',
             FormAction::ACTION_FORM   => 'onActionForm',
         ], FormAction::getSubscribedEvents());
     }
