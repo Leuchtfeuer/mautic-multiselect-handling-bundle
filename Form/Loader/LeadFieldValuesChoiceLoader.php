@@ -22,6 +22,8 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 
     private ?bool $loadMultiSelect = null;
 
+    private int $defaultFieldId = 0;
+
     public function __construct(private LeadFieldRepository $leadFieldRepository)
     {
     }
@@ -139,7 +141,12 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
             return $this->fields;
         }
 
-        if (null === $this->loadMultiSelect) {
+        if (0 !== $this->defaultFieldId) {
+            return [$this->leadFieldRepository->getEntity($this->defaultFieldId)];
+        }
+
+        if (null === $this->loadMultiSelect ) {
+
             return $this->fields = array_merge(
                 $this->leadFieldRepository->getFieldsByType('multiselect'),
                 $this->leadFieldRepository->getFieldsByType('select')
@@ -214,5 +221,10 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     public function setType(bool $multiple): void
     {
         $this->loadMultiSelect = $multiple;
+    }
+
+    public function setDefaultFieldId(int $defaultFieldId): void
+    {
+        $this->defaultFieldId = $defaultFieldId;
     }
 }
