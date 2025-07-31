@@ -12,14 +12,8 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoic
 
 class SegmentsModel
 {
-    private ListModel $listModel;
-
-    private LeadFieldChoiceLoader $leadFieldChoiceLoader;
-
-    public function __construct(ListModel $listModel, LeadFieldChoiceLoader $leadFieldChoiceLoader)
+    public function __construct(private ListModel $listModel, private LeadFieldChoiceLoader $leadFieldChoiceLoader)
     {
-        $this->listModel             = $listModel;
-        $this->leadFieldChoiceLoader = $leadFieldChoiceLoader;
     }
 
     /**

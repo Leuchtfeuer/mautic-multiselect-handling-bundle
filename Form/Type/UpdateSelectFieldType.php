@@ -19,19 +19,22 @@ class UpdateSelectFieldType extends AbstractType
     public const ADD    = 'multiselect_add';
     public const REMOVE = 'multiselect_remove';
 
-    private LeadFieldChoiceLoader $leadFieldChoiceLoader;
-    private LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader;
-
-    public function __construct(LeadFieldChoiceLoader $leadFieldChoiceLoader, LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader)
+    public function __construct(private LeadFieldChoiceLoader $leadFieldChoiceLoader, private LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader)
     {
-        $this->leadFieldChoiceLoader       = $leadFieldChoiceLoader;
-        $this->leadFieldValuesChoiceLoader = $leadFieldValuesChoiceLoader;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $this->leadFieldChoiceLoader->setType($options['multiple']);
         $this->leadFieldValuesChoiceLoader->setType($options['multiple']);
+        $fieldList = $this->leadFieldChoiceLoader->loadChoiceList()->getOriginalKeys();
+        if (null == $options['data'] && !empty($fieldList)) {
+            $flipFieldList = array_flip($fieldList);
+            $firstField    = reset($flipFieldList);
+            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $firstField);
+        } elseif (!empty($options['data']) && isset($options['data'][self::FIELD]) && $options['data'][self::FIELD] > 0) {
+            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $options['data'][self::FIELD]);
+        }
         $builder->add(self::FIELD, ChoiceType::class, [
             'label'         => 'mautic.plugin.multiselect_handling.field_action.managed_field',
             'required'      => true,
@@ -41,7 +44,8 @@ class UpdateSelectFieldType extends AbstractType
             ],
             'label_attr' => ['class' => 'control-label'],
             'attr'       => [
-                'class' => 'form-control',
+                'class'    => 'form-control',
+                'onchange' => 'Mautic.getOptionsFromField(this)',
             ],
             'multiple' => false,
             'expanded' => false,

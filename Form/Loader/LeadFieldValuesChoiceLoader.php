@@ -15,8 +15,6 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 {
     private ?ChoiceListInterface $choiceList = null;
 
-    private LeadFieldRepository $leadFieldRepository;
-
     /**
      * @var array<LeadField>
      */
@@ -24,9 +22,10 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
 
     private ?bool $loadMultiSelect = null;
 
-    public function __construct(LeadFieldRepository $leadFieldRepository)
+    private int $defaultFieldId = 0;
+
+    public function __construct(private LeadFieldRepository $leadFieldRepository)
     {
-        $this->leadFieldRepository = $leadFieldRepository;
     }
 
     /**
@@ -142,6 +141,10 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
             return $this->fields;
         }
 
+        if (0 !== $this->defaultFieldId) {
+            return [$this->leadFieldRepository->getEntity($this->defaultFieldId)];
+        }
+
         if (null === $this->loadMultiSelect) {
             return $this->fields = array_merge(
                 $this->leadFieldRepository->getFieldsByType('multiselect'),
@@ -166,13 +169,20 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     private function getMultiselectValues(LeadField $field): array
     {
         $properties = $field->getProperties();
-        if (!isset($properties['list']) || !is_array($properties['list']) || 0 === count($properties['list'])) {
+        if (
+            !isset($properties['list'])
+            || !is_array($properties['list'])
+            || 0 === count($properties['list'])
+        ) {
             return [];
         }
 
         $id     = $field->getId();
         $values = [];
         foreach ($properties['list'] as $property) {
+            if (!isset($property['value']) || !isset($property['label'])) {
+                continue;
+            }
             $values[$id.'-'.$property['value']] = [
                 'id'    => $id,
                 'name'  => $property['label'],
@@ -210,5 +220,10 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     public function setType(bool $multiple): void
     {
         $this->loadMultiSelect = $multiple;
+    }
+
+    public function setDefaultFieldId(int $defaultFieldId): void
+    {
+        $this->defaultFieldId = $defaultFieldId;
     }
 }

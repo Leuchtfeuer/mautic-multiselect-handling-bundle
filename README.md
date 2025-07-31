@@ -13,6 +13,7 @@ Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect�
 ### Form Action
 1. Set up custom field(s) with multiselect or select type, which will contain a list of Segments for synchronization. Needs to have the same alias.
 2. Add form action "Modify Segment Membership based on Multiselect".
+3. Add form action "Change contact's multiselect field" or "Change contact's select field" to the form.
 
 After form is submitted the Contact will be added/removed to/from segments according to the multiselect or select value(s) selected in the form action.
 
