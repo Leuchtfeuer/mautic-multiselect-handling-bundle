@@ -69,6 +69,10 @@ class ActionSubscriber implements EventSubscriberInterface
 
         $lead = $event->getLead();
 
+        if (null === $lead || !$lead instanceof Lead) {
+            return; // no lead to update
+        }
+
         if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
