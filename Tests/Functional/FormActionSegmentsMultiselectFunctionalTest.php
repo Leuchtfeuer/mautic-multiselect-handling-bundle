@@ -20,6 +20,8 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
     private const FIELD_NAME_MULTISELECT = 'test_multiselect_field';
     private const FIELD_NAME_SELECT      = 'test_select_field';
 
+    protected $useCleanupRollback = false;
+
     /**
      * @var array<array<string, string>>
      */
@@ -38,15 +40,15 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
         ],
         [
             'name'  => '4 Field',
-            'alias' => '4field',
+            'alias' => '4-field',
         ],
         [
             'name'  => '2 Other',
-            'alias' => '2other',
+            'alias' => '2-other',
         ],
         [
             'name'  => '3 Other',
-            'alias' => '3other',
+            'alias' => '3-other_one',
         ],
     ];
 
@@ -63,25 +65,25 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
             'email'                      => 'contact2@email.com',
             'firstname'                  => 'Robert A.',
             'lastname'                   => 'Heinlein',
-            self::FIELD_NAME_MULTISELECT => ['1field', '4field', '2other'],
+            self::FIELD_NAME_MULTISELECT => ['1field', '4-field', '2-other'],
         ],
         [
             'email'                      => 'contact3@email.com',
             'firstname'                  => 'Arthur C.',
             'lastname'                   => 'Clarke',
-            self::FIELD_NAME_MULTISELECT => ['1field', '2other'],
+            self::FIELD_NAME_MULTISELECT => ['1field', '2-other'],
         ],
         [
             'email'                      => 'contact4@email.com',
             'firstname'                  => 'Jonathan',
             'lastname'                   => 'Dafis',
-            self::FIELD_NAME_MULTISELECT => ['4field', '3other'],
+            self::FIELD_NAME_MULTISELECT => ['4-field', '3-other_one'],
         ],
         [
             'email'                      => 'contact5@email.com',
             'firstname'                  => 'Grzegorz',
             'lastname'                   => 'Brzeczyszczykiewicz',
-            self::FIELD_NAME_MULTISELECT => ['4field', '3field'],
+            self::FIELD_NAME_MULTISELECT => ['4-field', '3field'],
         ],
     ];
 
@@ -148,7 +150,7 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
         self::assertNotNull($leadAfter, 'Lead should not be null after submission');
         $field = $leadAfter->getFields()['core'][self::FIELD_NAME_MULTISELECT] ?? null;
         self::assertNotNull($field, 'Field should not be null after submission');
-        self::assertSame('3field|4field|2other|3other', $field['value'], 'Field value should match the expected value after submission');
+        self::assertSame('3field|4-field|2-other|3-other_one', $field['value'], 'Field value should match the expected value after submission');
         self::assertStringNotContainsString($removedValues[0], $field['value'], 'Field value should not contain the first removed value');
         self::assertStringNotContainsString($removedValues[1], $field['value'], 'Field value should not contain the second removed value');
     }

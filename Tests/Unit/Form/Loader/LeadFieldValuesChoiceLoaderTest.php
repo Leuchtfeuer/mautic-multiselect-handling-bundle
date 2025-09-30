@@ -259,7 +259,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
 
     public function testLoadChoicesForEmptyValuesExpectsProperAlias(): void
     {
-        $values = ['22-field_2_value_1-error', '22-field_2_value_2', '11-field_1_value_1', '11-field_1_value_non_existing_anymore'];
+        $values = ['22-', 'aaaa-field_2_value_2', '11'];
 
         $leadFieldRepository = $this->createMock(LeadFieldRepository::class);
         $leadFieldRepository->expects(self::never())

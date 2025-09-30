@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Validator;
 
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -108,9 +109,9 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
         }
 
         foreach ($fieldValues as $item) {
-            $value = explode('-', $item);
+            $id = SegmentsModel::splitAliasId($item)['id'];
 
-            if ($fieldId !== (int) $value[0]) {
+            if ($fieldId !== (int) $id) {
                 $this->context->buildViolation($message)
                     ->addViolation();
 

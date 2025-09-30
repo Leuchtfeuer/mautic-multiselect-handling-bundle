@@ -187,7 +187,7 @@ class FormAction implements EventSubscriberInterface
             $currentValue = $this->getFieldValue($field);
 
             foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
-                $aliasToAdd = explode('-', $idAliasToAdd)[1];
+                $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
                 if (in_array($aliasToAdd, $currentValue, true)) {
                     continue;
                 }
@@ -196,7 +196,7 @@ class FormAction implements EventSubscriberInterface
             }
 
             foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
-                $aliasToRemove = explode('-', $idAliasToRemove)[1];
+                $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
                 if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
                     continue;
                 }
