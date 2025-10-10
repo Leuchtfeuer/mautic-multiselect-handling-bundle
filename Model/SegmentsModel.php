@@ -39,6 +39,7 @@ class SegmentsModel
 
         $segments = [];
         foreach ($segmentsSettings as $segmentAlias => $segmentName) {
+            $segmentAlias = $this->listModel->cleanAlias($segmentAlias, '', 0, '-');
             $segmentsData = $this->listModel->getUserLists($segmentAlias);
 
             if (1 !== count($segmentsData)) {

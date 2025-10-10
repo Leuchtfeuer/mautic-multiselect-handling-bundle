@@ -77,7 +77,7 @@ class ActionSubscriber implements EventSubscriberInterface
             return; // field is not in contact
         }
 
-        $currentValue = $this->getFieldValue($field);
+        $currentValue = $this->getFieldValue($field, false);
 
         foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
             $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
@@ -131,7 +131,7 @@ class ActionSubscriber implements EventSubscriberInterface
             return; // field is not in contact
         }
 
-        $selectedSegments   = $this->getFieldValue($field);
+        $selectedSegments   = $this->getFieldValue($field, true);
         $multiselectFieldId = $values[SettingsType::FIELD];
 
         if (null === $availableSegments = $this->segmentsModel->getSegments($multiselectFieldId, (bool) $values[SettingsType::CHECKBOX])) {
@@ -206,7 +206,7 @@ class ActionSubscriber implements EventSubscriberInterface
      *
      * @return array<int,string>
      */
-    private function getFieldValue(array $field): array
+    private function getFieldValue(array $field, bool $cleanAlias): array
     {
         $currentValue = explode('|', $field['value'] ?? '');
 
@@ -214,7 +214,17 @@ class ActionSubscriber implements EventSubscriberInterface
             throw new UnexpectedTypeException($currentValue, 'array');
         }
 
-        return $currentValue;
+        if ([''] === $currentValue) {
+            return [];
+        }
+
+        if (!$cleanAlias) {
+            return $currentValue;
+        }
+
+        return array_map(function (string $segmentAlias): string {
+            return $this->leadModel->cleanAlias($segmentAlias, '', 0, '-');
+        }, $currentValue);
     }
 
     /**

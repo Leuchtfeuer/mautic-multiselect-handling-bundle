@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\EventListener;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\MySQL80Platform;
+use Doctrine\ORM\EntityManagerInterface;
 use Mautic\FormBundle\Entity\Action;
 use Mautic\FormBundle\Event\SubmissionEvent;
 use Mautic\FormBundle\Exception\ValidationException;
@@ -18,6 +21,7 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoic
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -542,7 +546,7 @@ class FormActionTest extends TestCase
     {
         $leadFieldChoiceLoader        = $this->createMock(LeadFieldChoiceLoader::class);
         $translator                   = $this->createMock(TranslatorInterface::class);
-        $leadModel                    = $this->createMock(LeadModel::class);
+        $leadModel                    = $this->getLeadModel(['getLists', 'removeFromLists', 'addToLists']);
         $segmentsModel                = $this->createMock(SegmentsModel::class);
         $event                        = $this->createMock(SubmissionEvent::class);
         $action                       = $this->createMock(Action::class);
@@ -606,10 +610,10 @@ class FormActionTest extends TestCase
             ->method('getSegments')
             ->with($fieldId, true)
             ->willReturn([
-                $segmentId         => $segmentAlias,
-                $createdSegmentId  => $createSegmentAlias,
-                $existingSegmentId => $existingSegmentAlias,
-                $removeSegmentId   => $removeSegmentAlias,
+                $segmentId         => $leadModel->cleanAlias($segmentAlias, '', 0, '-'),
+                $createdSegmentId  => $leadModel->cleanAlias($createSegmentAlias, '', 0, '-'),
+                $existingSegmentId => $leadModel->cleanAlias($existingSegmentAlias, '', 0, '-'),
+                $removeSegmentId   => $leadModel->cleanAlias($removeSegmentAlias, '', 0, '-'),
             ]);
 
         $existingSegment->expects(self::once())
@@ -617,14 +621,14 @@ class FormActionTest extends TestCase
             ->willReturn($existingSegmentId);
         $existingSegment->expects(self::once())
             ->method('getAlias')
-            ->willReturn($existingSegmentAlias);
+            ->willReturn($leadModel->cleanAlias($existingSegmentAlias, '', 0, '-'));
 
         $removeSegment->expects(self::once())
             ->method('getId')
             ->willReturn($removeSegmentId);
         $removeSegment->expects(self::once())
             ->method('getAlias')
-            ->willReturn($removeSegmentAlias);
+            ->willReturn($leadModel->cleanAlias($removeSegmentAlias, '', 0, '-'));
 
         $otherSegment->expects(self::once())
             ->method('getId')
@@ -649,7 +653,7 @@ class FormActionTest extends TestCase
     {
         $leadFieldChoiceLoader        = $this->createMock(LeadFieldChoiceLoader::class);
         $translator                   = $this->createMock(TranslatorInterface::class);
-        $leadModel                    = $this->createMock(LeadModel::class);
+        $leadModel                    = $this->getLeadModel(['getLists', 'removeFromLists', 'addToLists']);
         $segmentsModel                = $this->createMock(SegmentsModel::class);
         $event                        = $this->createMock(SubmissionEvent::class);
         $action                       = $this->createMock(Action::class);
@@ -710,10 +714,10 @@ class FormActionTest extends TestCase
             ->method('getSegments')
             ->with($fieldId, true)
             ->willReturn([
-                $segmentId         => $segmentAlias,
-                $createdSegmentId  => $createSegmentAlias,
-                $existingSegmentId => $existingSegmentAlias,
-                $removeSegmentId   => $removeSegmentAlias,
+                $segmentId         => $leadModel->cleanAlias($segmentAlias, '', 0, '-'),
+                $createdSegmentId  => $leadModel->cleanAlias($createSegmentAlias, '', 0, '-'),
+                $existingSegmentId => $leadModel->cleanAlias($existingSegmentAlias, '', 0, '-'),
+                $removeSegmentId   => $leadModel->cleanAlias($removeSegmentAlias, '', 0, '-'),
             ]);
 
         $existingSegment->expects(self::once())
@@ -721,14 +725,14 @@ class FormActionTest extends TestCase
             ->willReturn($existingSegmentId);
         $existingSegment->expects(self::once())
             ->method('getAlias')
-            ->willReturn($existingSegmentAlias);
+            ->willReturn($leadModel->cleanAlias($existingSegmentAlias, '', 0, '-'));
 
         $removeSegment->expects(self::once())
             ->method('getId')
             ->willReturn($removeSegmentId);
         $removeSegment->expects(self::once())
             ->method('getAlias')
-            ->willReturn($removeSegmentAlias);
+            ->willReturn($leadModel->cleanAlias($removeSegmentAlias, '', 0, '-'));
 
         $otherSegment->expects(self::once())
             ->method('getId')
@@ -753,7 +757,7 @@ class FormActionTest extends TestCase
     {
         $leadFieldChoiceLoader     = $this->createMock(LeadFieldChoiceLoader::class);
         $translator                = $this->createMock(TranslatorInterface::class);
-        $leadModel                 = $this->createMock(LeadModel::class);
+        $leadModel                 = $this->getLeadModel(['getLists', 'removeFromLists', 'addToLists']);
         $segmentsModel             = $this->createMock(SegmentsModel::class);
         $event                     = $this->createMock(SubmissionEvent::class);
         $action                    = $this->createMock(Action::class);
@@ -810,8 +814,8 @@ class FormActionTest extends TestCase
             ->method('getSegments')
             ->with($fieldId, false)
             ->willReturn([
-                $segment1Id => $segment1Alias,
-                $segment2Id => $segment2Alias,
+                $segment1Id => $leadModel->cleanAlias($segment1Alias, '', 0, '-'),
+                $segment2Id => $leadModel->cleanAlias($segment2Alias, '', 0, '-'),
             ]);
 
         $segment1 = $this->createMock(LeadList::class);
@@ -820,7 +824,7 @@ class FormActionTest extends TestCase
             ->willReturn($segment1Id);
         $segment1->expects(self::once())
             ->method('getAlias')
-            ->willReturn($segment1Alias);
+            ->willReturn($leadModel->cleanAlias($segment1Alias, '', 0, '-'));
 
         $segment2 = $this->createMock(LeadList::class);
         $segment2->expects(self::once())
@@ -828,7 +832,7 @@ class FormActionTest extends TestCase
             ->willReturn($segment2Id);
         $segment2->expects(self::once())
             ->method('getAlias')
-            ->willReturn($segment2Alias);
+            ->willReturn($leadModel->cleanAlias($segment2Alias, '', 0, '-'));
 
         $leadModel->expects(self::once())
             ->method('getLists')
@@ -849,5 +853,33 @@ class FormActionTest extends TestCase
             FormAction::ACTION        => 'onAction',
             FormAction::ACTION_FORM   => 'onActionForm',
         ], FormAction::getSubscribedEvents());
+    }
+
+    /**
+     * @param list<string> $methods
+     *
+     * @return MockObject&LeadModel
+     */
+    private function getLeadModel(array $methods = ['saveEntity', 'setFieldValues']): MockObject
+    {
+        $platform = $this->createMock(MySQL80Platform::class);
+
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getDatabasePlatform')
+            ->willReturn($platform);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getConnection')
+            ->willReturn($connection);
+
+        $leadModel = $this->getMockBuilder(LeadModel::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods($methods)
+            ->getMock();
+        $reflectionObject   = new \ReflectionObject($leadModel);
+        $reflectionProperty = $reflectionObject->getProperty('em');
+        $reflectionProperty->setValue($leadModel, $entityManager);
+
+        return $leadModel;
     }
 }

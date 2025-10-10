@@ -78,6 +78,10 @@ class FormAction implements EventSubscriberInterface
             $selectedSegments = [];
         }
 
+        $selectedSegments = array_map(function (string $segmentAlias): string {
+            return $this->leadModel->cleanAlias($segmentAlias, '', 0, '-');
+        }, $selectedSegments);
+
         try {
             if (null === $segmentsData = $this->segmentsModel->getSegments($actionProperties[SettingsType::FIELD], (bool) $actionProperties[SettingsType::CHECKBOX])) {
                 throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
@@ -225,6 +229,10 @@ class FormAction implements EventSubscriberInterface
 
         if (!is_array($currentValue)) {
             throw new UnexpectedTypeException($currentValue, 'array');
+        }
+
+        if ([''] === $currentValue) {
+            return [];
         }
 
         return $currentValue;

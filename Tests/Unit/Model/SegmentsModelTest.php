@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\Model;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\MySQL80Platform;
+use Doctrine\ORM\EntityManagerInterface;
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\ListModel;
@@ -11,6 +14,7 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupExce
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class SegmentsModelTest extends TestCase
@@ -90,7 +94,7 @@ class SegmentsModelTest extends TestCase
         $segmentName           = 'Segment name';
         $properties            = ['list' => [['value' => $segmentAlias, 'label' => $segmentName]]];
         $leadFieldChoiceLoader = $this->createMock(LeadFieldChoiceLoader::class);
-        $listModel             = $this->createMock(ListModel::class);
+        $listModel             = $this->getListModel();
         $leadField             = $this->createMock(LeadField::class);
 
         $leadFieldChoiceLoader->expects(self::once())
@@ -104,7 +108,7 @@ class SegmentsModelTest extends TestCase
 
         $listModel->expects(self::once())
             ->method('getUserLists')
-            ->with($segmentAlias)
+            ->with($listModel->cleanAlias($segmentAlias, '', 0, '-'))
             ->willReturn($segmentsData);
         $listModel->expects(self::never())
             ->method('saveEntity');
@@ -120,7 +124,7 @@ class SegmentsModelTest extends TestCase
         $segmentName           = 'Segment name';
         $properties            = ['list' => [['value' => $segmentAlias, 'label' => $segmentName]]];
         $leadFieldChoiceLoader = $this->createMock(LeadFieldChoiceLoader::class);
-        $listModel             = $this->createMock(ListModel::class);
+        $listModel             = $this->getListModel();
         $leadField             = $this->createMock(LeadField::class);
         $segmentsData          = [];
 
@@ -135,7 +139,7 @@ class SegmentsModelTest extends TestCase
 
         $listModel->expects(self::once())
             ->method('getUserLists')
-            ->with($segmentAlias)
+            ->with($listModel->cleanAlias($segmentAlias, '', 0, '-'))
             ->willReturn($segmentsData);
         $listModel->expects(self::never())
             ->method('saveEntity');
@@ -151,6 +155,7 @@ class SegmentsModelTest extends TestCase
 
     public function testGetSegmentsOk(): void
     {
+        $listModel                = $this->getListModel();
         $fieldId                  = 123;
         $segmentAlias             = 'segment_alias';
         $segmentName              = 'Segment name';
@@ -160,6 +165,7 @@ class SegmentsModelTest extends TestCase
         $existingSegmentName      = 'Existing segment';
         $createdSegmentId         = 3737;
         $createSegmentAlias       = 'create_segment_alias';
+        $createSegmentAliasClean  = $listModel->cleanAlias($createSegmentAlias, '', 0, '-');
         $createSegmentName        = 'Create segment name';
         $removeSegmentId          = 74747;
         $removeSegmentAlias       = 'remove_alias';
@@ -171,13 +177,12 @@ class SegmentsModelTest extends TestCase
             ['value' => $removeSegmentAlias, 'label' => $removeSegmentName], ],
         ];
         $segmentsData          = [
-            [['id' => $segmentId, 'alias' => $segmentAlias]],
+            [['id' => $segmentId, 'alias' => $listModel->cleanAlias($segmentAlias, '', 0, '-')]],
             [],
-            [['id' => $existingSegmentId, 'alias' => $existingSegmentAlias]],
-            [['id' => $removeSegmentId, 'alias' => $removeSegmentAlias]],
+            [['id' => $existingSegmentId, 'alias' => $listModel->cleanAlias($existingSegmentAlias, '', 0, '-')]],
+            [['id' => $removeSegmentId, 'alias' => $listModel->cleanAlias($removeSegmentAlias, '', 0, '-')]],
         ];
         $leadFieldChoiceLoader = $this->createMock(LeadFieldChoiceLoader::class);
-        $listModel             = $this->createMock(ListModel::class);
         $leadField             = $this->createMock(LeadField::class);
 
         $leadFieldChoiceLoader->expects(self::once())
@@ -189,14 +194,40 @@ class SegmentsModelTest extends TestCase
             ->method('getProperties')
             ->willReturn($properties);
 
-        $listModel->expects(self::exactly(4))
+        $invokedCount = self::exactly(4);
+        $listModel->expects($invokedCount)
             ->method('getUserLists')
-            ->withConsecutive([$segmentAlias], [$createSegmentAlias], [$existingSegmentAlias], [$removeSegmentAlias])
-            ->willReturnOnConsecutiveCalls($segmentsData[0], $segmentsData[1], $segmentsData[2], $segmentsData[3]);
+            ->willReturnCallback(function (string $alias) use ($removeSegmentAlias, $existingSegmentAlias, $createSegmentAliasClean, $segmentsData, $segmentAlias, $listModel, $invokedCount) {
+                if (1 === $invokedCount->getInvocationCount()) {
+                    self::assertSame($listModel->cleanAlias($segmentAlias, '', 0, '-'), $alias);
+
+                    return $segmentsData[0];
+                }
+
+                if (2 === $invokedCount->getInvocationCount()) {
+                    self::assertSame($createSegmentAliasClean, $alias);
+
+                    return $segmentsData[1];
+                }
+
+                if (3 === $invokedCount->getInvocationCount()) {
+                    self::assertSame($listModel->cleanAlias($existingSegmentAlias, '', 0, '-'), $alias);
+
+                    return $segmentsData[2];
+                }
+
+                if (4 === $invokedCount->getInvocationCount()) {
+                    self::assertSame($listModel->cleanAlias($removeSegmentAlias, '', 0, '-'), $alias);
+
+                    return $segmentsData[3];
+                }
+
+                self::fail('Unknown invocation');
+            });
         $listModel->expects(self::once())
             ->method('saveEntity')
-            ->willReturnCallback(static function (LeadList $leadList) use ($createSegmentName, $createdSegmentId, $createSegmentAlias): void {
-                self::assertSame($createSegmentAlias, $leadList->getAlias());
+            ->willReturnCallback(static function (LeadList $leadList) use ($createSegmentName, $createdSegmentId, $createSegmentAliasClean): void {
+                self::assertSame($createSegmentAliasClean, $leadList->getAlias());
                 self::assertSame($createSegmentName, $leadList->getName());
                 $reflection = new \ReflectionProperty(LeadList::class, 'id');
                 $reflection->setAccessible(true);
@@ -205,10 +236,10 @@ class SegmentsModelTest extends TestCase
 
         $segmentsModel = new SegmentsModel($listModel, $leadFieldChoiceLoader);
         self::assertSame([
-            $segmentId         => $segmentAlias,
-            $createdSegmentId  => $createSegmentAlias,
-            $existingSegmentId => $existingSegmentAlias,
-            $removeSegmentId   => $removeSegmentAlias,
+            $segmentId         => $listModel->cleanAlias($segmentAlias, '', 0, '-'),
+            $createdSegmentId  => $createSegmentAliasClean,
+            $existingSegmentId => $listModel->cleanAlias($existingSegmentAlias, '', 0, '-'),
+            $removeSegmentId   => $listModel->cleanAlias($removeSegmentAlias, '', 0, '-'),
         ], $segmentsModel->getSegments($fieldId, true));
     }
 
@@ -244,5 +275,31 @@ class SegmentsModelTest extends TestCase
             [['not array']],
             [['not_id' => 'index']],
         ];
+    }
+
+    /**
+     * @return MockObject&ListModel
+     */
+    private function getListModel(): MockObject
+    {
+        $platform = $this->createMock(MySQL80Platform::class);
+
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getDatabasePlatform')
+            ->willReturn($platform);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getConnection')
+            ->willReturn($connection);
+
+        $leadModel = $this->getMockBuilder(ListModel::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['saveEntity', 'getUserLists'])
+            ->getMock();
+        $reflectionObject   = new \ReflectionObject($leadModel);
+        $reflectionProperty = $reflectionObject->getProperty('em');
+        $reflectionProperty->setValue($leadModel, $entityManager);
+
+        return $leadModel;
     }
 }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\Unit\EventListener;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\MySQL80Platform;
+use Doctrine\ORM\EntityManagerInterface;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
@@ -13,6 +16,7 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class ActionSubscriberTest extends TestCase
@@ -24,11 +28,25 @@ class ActionSubscriberTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
         /** @phpstan-ignore-next-line */
-        $event = $this->createMock(CampaignExecutionEvent::class);
-        $event->expects(self::exactly(2))
+        $event        = $this->createMock(CampaignExecutionEvent::class);
+        $invokedCount = self::exactly(2);
+        $event->expects($invokedCount)
             ->method('checkContext')
-            ->withConsecutive([ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION], [ActionSubscriber::MANAGE_SELECT_FIELD_ACTION])
-            ->willReturn(false);
+            ->willReturnCallback(function (string $eventType) use ($invokedCount) {
+                if (1 === $invokedCount->getInvocationCount()) {
+                    self::assertSame(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION, $eventType);
+
+                    return false;
+                }
+
+                if (2 === $invokedCount->getInvocationCount()) {
+                    self::assertSame(ActionSubscriber::MANAGE_SELECT_FIELD_ACTION, $eventType);
+
+                    return false;
+                }
+
+                self::fail('Unknown invocation');
+            });
         $event->expects(self::never())
             ->method('getConfig');
         $event->expects(self::never())
@@ -52,11 +70,25 @@ class ActionSubscriberTest extends TestCase
             ->method('isPublished')
             ->willReturn(true);
         /** @phpstan-ignore-next-line */
-        $event = $this->createMock(CampaignExecutionEvent::class);
-        $event->expects(self::exactly(2))
+        $event        = $this->createMock(CampaignExecutionEvent::class);
+        $invokedCount = self::exactly(2);
+        $event->expects($invokedCount)
             ->method('checkContext')
-            ->withConsecutive([ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION], [ActionSubscriber::MANAGE_SELECT_FIELD_ACTION])
-            ->willReturnOnConsecutiveCalls(false, true);
+            ->willReturnCallback(function (string $eventType) use ($invokedCount) {
+                if (1 === $invokedCount->getInvocationCount()) {
+                    self::assertSame(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION, $eventType);
+
+                    return false;
+                }
+
+                if (2 === $invokedCount->getInvocationCount()) {
+                    self::assertSame(ActionSubscriber::MANAGE_SELECT_FIELD_ACTION, $eventType);
+
+                    return true;
+                }
+
+                self::fail('Unknown invocation');
+            });
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn(['other' => 'value']);
@@ -121,7 +153,7 @@ class ActionSubscriberTest extends TestCase
      */
     public function testManageFieldActionManagesMultiselectFieldInContact(?string $fieldValue, array $expectedFieldValues): void
     {
-        $config                    = $this->createMock(Config::class);
+        $config = $this->createMock(Config::class);
         $config->expects(self::once())
             ->method('isPublished')
             ->willReturn(true);
@@ -154,7 +186,7 @@ class ActionSubscriberTest extends TestCase
             ->method('getLead')
             ->willReturn($lead);
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel = $this->getLeadModel();
         $leadModel->expects(self::once())
             ->method('saveEntity')
             ->with($lead);
@@ -175,7 +207,7 @@ class ActionSubscriberTest extends TestCase
     public function manageFieldProvider(): array
     {
         return [
-            [null, [1 => 'alias_add_1', 2 => 'alias_add_2']],
+            [null, [0 => 'alias_add_1', 1 => 'alias_add_2']],
             ['other', ['other', 'alias_add_1', 'alias_add_2']],
             ['alias_add_1', ['alias_add_1', 'alias_add_2']],
             ['alias_remove_1', ['alias_add_1', 'alias_add_2']],
@@ -220,7 +252,7 @@ class ActionSubscriberTest extends TestCase
             ->method('getLead')
             ->willReturn($lead);
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel = $this->getLeadModel();
         $leadModel->expects(self::once())
             ->method('saveEntity')
             ->with($lead);
@@ -271,7 +303,7 @@ class ActionSubscriberTest extends TestCase
             ->method('getLead')
             ->willReturn($lead);
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel = $this->getLeadModel();
         $leadModel->expects(self::once())
             ->method('saveEntity')
             ->with($lead);
@@ -322,7 +354,7 @@ class ActionSubscriberTest extends TestCase
             ->method('getLead')
             ->willReturn($lead);
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel = $this->getLeadModel();
         $leadModel->expects(self::once())
             ->method('saveEntity')
             ->with($lead);
@@ -563,7 +595,7 @@ class ActionSubscriberTest extends TestCase
             ->method('getId')
             ->willReturn($idAdd2);
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel = $this->getLeadModel(['saveEntity', 'getLists', 'addToLists', 'removeFromLists']);
         $leadModel->expects(self::never())
             ->method('saveEntity');
         $leadModel->expects(self::once())
@@ -581,10 +613,10 @@ class ActionSubscriberTest extends TestCase
             ->method('getSegments')
             ->with($fieldId, false)
             ->willReturn([
-                $idRemove1 => $aliasRemove1,
-                $idRemove2 => $aliasRemove2,
-                $idAdd1    => $aliasAdd1,
-                $idAdd2    => $aliasAdd2,
+                $idRemove1 => $leadModel->cleanAlias($aliasRemove1, '', 0, '-'),
+                $idRemove2 => $leadModel->cleanAlias($aliasRemove2, '', 0, '-'),
+                $idAdd1    => $leadModel->cleanAlias($aliasAdd1, '', 0, '-'),
+                $idAdd2    => $leadModel->cleanAlias($aliasAdd2, '', 0, '-'),
             ]);
 
         $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
@@ -641,7 +673,7 @@ class ActionSubscriberTest extends TestCase
             ->method('getId')
             ->willReturn($idAdd2);
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel = $this->getLeadModel(['saveEntity', 'getLists', 'addToLists', 'removeFromLists']);
         $leadModel->expects(self::never())
             ->method('saveEntity');
         $leadModel->expects(self::once())
@@ -657,10 +689,10 @@ class ActionSubscriberTest extends TestCase
             ->method('getSegments')
             ->with($fieldId, false)
             ->willReturn([
-                $idRemove1 => $aliasRemove1,
-                $idRemove2 => $aliasRemove2,
-                $idAdd1    => $aliasAdd1,
-                $idAdd2    => $aliasAdd2,
+                $idRemove1 => $leadModel->cleanAlias($aliasRemove1, '', 0, '-'),
+                $idRemove2 => $leadModel->cleanAlias($aliasRemove2, '', 0, '-'),
+                $idAdd1    => $leadModel->cleanAlias($aliasAdd1, '', 0, '-'),
+                $idAdd2    => $leadModel->cleanAlias($aliasAdd2, '', 0, '-'),
             ]);
 
         $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
@@ -674,5 +706,33 @@ class ActionSubscriberTest extends TestCase
             ActionSubscriber::MANAGE_SELECT_FIELD_EVENT      => 'onManageFieldAction',
             ActionSubscriber::MANAGE_SEGMENTS_EVENT          => 'onManageSegmentsAction',
         ], ActionSubscriber::getSubscribedEvents());
+    }
+
+    /**
+     * @param list<string> $methods
+     *
+     * @return MockObject&LeadModel
+     */
+    private function getLeadModel(array $methods = ['saveEntity', 'setFieldValues']): MockObject
+    {
+        $platform = $this->createMock(MySQL80Platform::class);
+
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getDatabasePlatform')
+            ->willReturn($platform);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getConnection')
+            ->willReturn($connection);
+
+        $leadModel = $this->getMockBuilder(LeadModel::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods($methods)
+            ->getMock();
+        $reflectionObject   = new \ReflectionObject($leadModel);
+        $reflectionProperty = $reflectionObject->getProperty('em');
+        $reflectionProperty->setValue($leadModel, $entityManager);
+
+        return $leadModel;
     }
 }

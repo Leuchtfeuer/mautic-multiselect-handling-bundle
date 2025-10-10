@@ -352,6 +352,51 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         self::assertSame($segments[1]['id'], $list->getId());
     }
 
+    public function testFunctionalUnderscoreSingleSelectWithCreatingMissing(): void
+    {
+        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        unset($selectedSegments[1]);
+        $createdSegmentName  = 'Created segment name';
+        $createdSegmentAlias = 'created_segment-name';
+        $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]));
+        $contact             = $this->created['contact'] = $this->createContact();
+        $formId              = $this->created['form'] = $this->createForm($fieldId, true, false);
+
+        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
+
+        $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
+        $formCrawler = $crawler->filter('form[id=mauticform_submissiontestform]');
+        self::assertCount(1, $formCrawler, (string) $this->client->getResponse()->getContent());
+        $form = $formCrawler->form();
+        $form->disableValidation();
+        $form->setValues([
+            'mauticform[email]'           => $contact['fields']['core']['email']['value'],
+            'mauticform[select_segments]' => $createdSegmentAlias,
+        ]);
+        $this->client->submit($form);
+
+        $clientResponse = $this->client->getResponse();
+
+        self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        self::assertSame('https://localhost/form/'.$formId, $clientResponse->headers->get('Location'));
+        $this->client->followRedirect();
+
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contact['id']);
+
+        self::assertCount(2, $lists);
+        $list = array_pop($lists);
+        self::assertSame($createdSegmentName, $list->getName());
+        self::assertSame($this->leadModel->cleanAlias($createdSegmentAlias, '', 0, '-'), $list->getAlias());
+        $list = array_pop($lists);
+        self::assertSame($segments[1]['id'], $list->getId());
+    }
+
     public function testFunctionalSingleSelectWithoutCreatingMissingButMissingSegment(): void
     {
         $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
