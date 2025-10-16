@@ -7,6 +7,7 @@ Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect�
 * Clear the cache.
 * In Mautic UI "Plugins" click "Install/Upgrade Plugins".
 * Click on "Leuchtfeuer Multiselect Handling" and activate it with "Yes".
+* In some cases you'll need to execute a console command `./bin/console mautic:assets:generate`.
 
 ## Features
 

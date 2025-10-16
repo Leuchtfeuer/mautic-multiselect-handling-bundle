@@ -39,6 +39,7 @@ class SegmentsModel
 
         $segments = [];
         foreach ($segmentsSettings as $segmentAlias => $segmentName) {
+            $segmentAlias = $this->listModel->cleanAlias($segmentAlias, '', 0, '-');
             $segmentsData = $this->listModel->getUserLists($segmentAlias);
 
             if (1 !== count($segmentsData)) {
@@ -66,5 +67,22 @@ class SegmentsModel
         }
 
         return $segments;
+    }
+
+    /**
+     * @return array{id:int, alias: string}
+     */
+    public static function splitAliasId(string $value): array
+    {
+        $matches = [];
+        if (in_array(preg_match('/^(?<id>\d+)-(?<alias>.+)$/i', $value, $matches), [false, 0], true)) {
+            throw new \RuntimeException('There is something wrong with the field alias.');
+        }
+
+        if (!isset($matches['id'], $matches['alias']) || !is_numeric($matches['id'])) {
+            throw new \RuntimeException('There is something wrong with the field alias.');
+        }
+
+        return ['id' => (int) $matches['id'], 'alias' => $matches['alias']];
     }
 }

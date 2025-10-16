@@ -6,6 +6,7 @@ namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader;
 
 use Mautic\LeadBundle\Entity\LeadField;
 use Mautic\LeadBundle\Entity\LeadFieldRepository;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\Form\ChoiceList\ArrayChoiceList;
 use Symfony\Component\Form\ChoiceList\ChoiceListInterface;
 use Symfony\Component\Form\ChoiceList\Loader\ChoiceLoaderInterface;
@@ -66,7 +67,7 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
         foreach ($values as $possibleValue) {
             $idAndAlias = $this->extractIdAndAlias($possibleValue);
 
-            if (!isset($idAndAlias['id']) || isset($fieldIds[$idAndAlias['id']])) {
+            if (null === $idAndAlias || isset($fieldIds[$idAndAlias['id']])) {
                 continue;
             }
 
@@ -194,21 +195,15 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     }
 
     /**
-     * @return array{id?: int, alias?: string}
+     * @return array{id: int, alias: string}|null
      */
-    private function extractIdAndAlias(string $value): array
+    private function extractIdAndAlias(string $value): ?array
     {
         if ('' === $value) {
-            return [];
+            return null;
         }
 
-        $idAndAlias = explode('-', $value);
-
-        if (2 !== count($idAndAlias) || !is_numeric($idAndAlias[0])) {
-            throw new \RuntimeException('There is something wrong with the field alias.');
-        }
-
-        return ['id' => (int) $idAndAlias[0], 'alias' => $idAndAlias['1']];
+        return SegmentsModel::splitAliasId($value);
     }
 
     public function reset(): void

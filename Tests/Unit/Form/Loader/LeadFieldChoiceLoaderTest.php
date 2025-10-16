@@ -46,15 +46,36 @@ class LeadFieldChoiceLoaderTest extends TestCase
         $leadFieldRepository = $this->createMock(LeadFieldRepository::class);
 
         if (null === $isMultiSelect) {
-            $leadFieldRepository->expects(self::exactly(4))
+            $invokedCount = self::exactly(4);
+            $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
-                ->withConsecutive(['multiselect'], ['select'], ['multiselect'], ['select'])
-                ->willReturnOnConsecutiveCalls(
-                    [$leadField1],
-                    [$leadField2],
-                    [$leadField1],
-                    [$leadField2],
-                );
+                ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
+                    if (1 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('multiselect', $alias);
+
+                        return [$leadField1];
+                    }
+
+                    if (2 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('select', $alias);
+
+                        return [$leadField2];
+                    }
+
+                    if (3 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('multiselect', $alias);
+
+                        return [$leadField1];
+                    }
+
+                    if (4 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('select', $alias);
+
+                        return [$leadField2];
+                    }
+
+                    self::fail('Unknown invocation');
+                });
         } elseif (true === $isMultiSelect) {
             $leadFieldRepository->expects(self::exactly(2))
                 ->method('getFieldsByType')
@@ -150,13 +171,24 @@ class LeadFieldChoiceLoaderTest extends TestCase
 
         $leadFieldRepository   = $this->createMock(LeadFieldRepository::class);
         if (null === $isMultiSelect) {
-            $leadFieldRepository->expects(self::exactly(2))
+            $invokedCount = self::exactly(2);
+            $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
-                ->withConsecutive(['multiselect'], ['select'])
-                ->willReturnOnConsecutiveCalls(
-                    [$leadField1],
-                    [$leadField2],
-                );
+                ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
+                    if (1 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('multiselect', $alias);
+
+                        return [$leadField1];
+                    }
+
+                    if (2 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('select', $alias);
+
+                        return [$leadField2];
+                    }
+
+                    self::fail('Unknown invocation');
+                });
         } elseif (true === $isMultiSelect) {
             $leadFieldRepository->expects(self::once())
                 ->method('getFieldsByType')
@@ -199,13 +231,24 @@ class LeadFieldChoiceLoaderTest extends TestCase
 
         $leadFieldRepository   = $this->createMock(LeadFieldRepository::class);
         if (null === $isMultiSelect) {
-            $leadFieldRepository->expects(self::exactly(2))
+            $invokedCount = self::exactly(2);
+            $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
-                ->withConsecutive(['multiselect'], ['select'])
-                ->willReturnOnConsecutiveCalls(
-                    [$leadField1],
-                    [$leadField2],
-                );
+                ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
+                    if (1 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('multiselect', $alias);
+
+                        return [$leadField1];
+                    }
+
+                    if (2 === $invokedCount->getInvocationCount()) {
+                        self::assertSame('select', $alias);
+
+                        return [$leadField2];
+                    }
+
+                    self::fail('Unknown invocation');
+                });
         } elseif (true === $isMultiSelect) {
             $leadFieldRepository->expects(self::once())
                 ->method('getFieldsByType')
