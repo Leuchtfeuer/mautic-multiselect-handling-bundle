@@ -79,6 +79,13 @@ return [
                     'mautic.plugin.multiselect_handling.lead_field_values_choice_loader',
                 ],
             ],
+            'mautic.plugin.multiselect_handling.update_select_field_action_type' => [
+                'class'     => MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldActionType::class,
+                'arguments' => [
+                    'mautic.plugin.multiselect_handling.lead_field_choice_loader',
+                    'mautic.plugin.multiselect_handling.lead_field_values_choice_loader',
+                ],
+            ],
         ],
         'integrations' => [
             'mautic.integration.leuchtfeuermultiselect' => [

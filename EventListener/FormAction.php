@@ -22,8 +22,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FormAction implements EventSubscriberInterface
 {
-    public const ACTION      = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage';
+    public const ACTION = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage';
     public const ACTION_FORM = 'mautic.plugin.multiselect_handling.form.actions.contact_segments_manage';
+    public const ACTION_FORM_SELECT = 'mautic.plugin.multiselect_handling.form.actions.contact_select_manage';
 
     public const INVALID_SETUP = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_invalid_setup';
 
@@ -218,6 +219,95 @@ class FormAction implements EventSubscriberInterface
         }
     }
 
+    public function onActionSelectForm(SubmissionEvent $event): void
+    {
+        if (!$this->config->isPublished()) {
+            return;
+        }
+
+        if (false === $event->checkContext(FormSubscriber::ACTION_SELECT_CONTACT)) {
+            return;
+        }
+
+        $lead = $event->getLead();
+        if (null === $lead || !$lead instanceof Lead) {
+            return; // no lead to update
+        }
+
+        $actions = $event->getForm()->getActions();
+        $enable  = false;
+        foreach ($actions as $action) {
+            if (FormSubscriber::ACTION_SELECT_CONTACT === $action->getType()) {
+                $enable = true;
+                break;
+            }
+        }
+        if (!$enable) {
+            return;
+        }
+
+        $fields = [
+            UpdateSelectFieldType::ADD    => [],
+            UpdateSelectFieldType::REMOVE => [],
+        ];
+
+        foreach ($actions as $action) {
+            if (FormSubscriber::ACTION_SELECT_CONTACT !== $action->getType()) {
+                continue;
+            }
+            $values = $action->getProperties();
+            foreach ($fields as $key => $item) {
+                if (isset($values[$key])) {
+                    if (is_string($values[$key]) && '' !== $values[$key]) {
+                        $fields[$key] = [$values[$key]];
+                        continue;
+                    }
+
+                    if (is_array($values[$key]) && [] !== $values[$key]) {
+                        $fields[$key] = $values[$key];
+                        continue;
+                    }
+
+                    if (!is_array($values[$key]) && !is_string($values[$key])) {
+                        throw new \RuntimeException('Field values has an incompatible type.');
+                    }
+                }
+            }
+
+            if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
+                return; // field is not in contact
+            }
+
+            $currentValue = $this->getFieldValue($field);
+
+            foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
+                $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
+                if (in_array($aliasToAdd, $currentValue, true)) {
+                    continue;
+                }
+
+                $currentValue[] = $aliasToAdd;
+            }
+
+            foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
+                $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
+                if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
+                    continue;
+                }
+
+                unset($currentValue[$index]);
+            }
+
+            $fieldValue = array_filter(array_values($currentValue));
+
+            if ('select' === $field['type']) {
+                $fieldValue = count($fieldValue) > 0 ? array_pop($fieldValue) : null;
+            }
+            $this->leadModel->setFieldValues($lead, [$field['alias'] => $fieldValue], true);
+            $this->leadModel->saveEntity($lead);
+        }
+    }
+
     /**
      * @param array<int|string> $field
      *
@@ -269,6 +359,7 @@ class FormAction implements EventSubscriberInterface
         return [
             self::ACTION        => 'onAction',
             self::ACTION_FORM   => 'onActionForm',
+            self::ACTION_FORM_SELECT   => 'onActionSelectForm',
         ];
     }
 }

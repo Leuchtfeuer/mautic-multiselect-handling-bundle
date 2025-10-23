@@ -8,6 +8,7 @@ use Mautic\FormBundle\Event\FormBuilderEvent;
 use Mautic\FormBundle\FormEvents;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldActionType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -15,6 +16,7 @@ class FormSubscriber implements EventSubscriberInterface
 {
     public const ACTION                     = 'plugin.multiselectHandlingManageAction';
     public const ACTION_MULTISELECT_CONTACT = 'plugin.multiselectHandlingContactFieldAction';
+    public const ACTION_SELECT_CONTACT      = 'plugin.multiselectHandlingSelectFieldAction';
 
     public function __construct(private Config $config)
     {
@@ -65,6 +67,25 @@ class FormSubscriber implements EventSubscriberInterface
 
                 // Callback method to be executed after the submission
                 'eventName'    => FormAction::ACTION_FORM,
+            ]
+        );
+
+        $event->addSubmitAction(
+            self::ACTION_SELECT_CONTACT,
+            [
+                // Label to group by in the dropdown
+                'group'       => 'mautic.plugin.multiselect_handling.actions.group',
+
+                // Label to list by in the dropdown
+                'label'           => 'mautic.plugin.multiselect_handling.actions.contact_select_field_action',
+                'description'     => 'mautic.plugin.multiselect_handling.actions.contact_select_field_action_description',
+                'formType'        => UpdateSelectFieldActionType::class,
+                'formTypeOptions' => [
+                    'multiple' => false,
+                ],
+
+                // Callback method to be executed after the submission
+                'eventName'    => FormAction::ACTION_FORM_SELECT,
             ]
         );
     }
