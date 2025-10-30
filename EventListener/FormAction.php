@@ -144,78 +144,62 @@ class FormAction implements EventSubscriberInterface
             return; // no lead to update
         }
 
-        $actions = $event->getForm()->getActions();
-        $enable  = false;
-        foreach ($actions as $action) {
-            if (FormSubscriber::ACTION_MULTISELECT_CONTACT === $action->getType()) {
-                $enable = true;
-                break;
-            }
-        }
-        if (!$enable) {
-            return;
-        }
-
+        $action = $event->getAction();
         $fields = [
             UpdateSelectFieldType::ADD    => [],
             UpdateSelectFieldType::REMOVE => [],
         ];
 
-        foreach ($actions as $action) {
-            if (FormSubscriber::ACTION_MULTISELECT_CONTACT !== $action->getType()) {
+        $values = $action->getProperties();
+        foreach ($fields as $key => $item) {
+            if (isset($values[$key])) {
+                if (is_string($values[$key]) && '' !== $values[$key]) {
+                    $fields[$key] = [$values[$key]];
+                    continue;
+                }
+
+                if (is_array($values[$key]) && [] !== $values[$key]) {
+                    $fields[$key] = $values[$key];
+                    continue;
+                }
+
+                if (!is_array($values[$key]) && !is_string($values[$key])) {
+                    throw new \RuntimeException('Field values has an incompatible type.');
+                }
+            }
+        }
+
+        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
+            return; // field is not in contact
+        }
+
+        $currentValue = $this->getFieldValue($field);
+
+        foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
+            $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
+            if (in_array($aliasToAdd, $currentValue, true)) {
                 continue;
             }
-            $values = $action->getProperties();
-            foreach ($fields as $key => $item) {
-                if (isset($values[$key])) {
-                    if (is_string($values[$key]) && '' !== $values[$key]) {
-                        $fields[$key] = [$values[$key]];
-                        continue;
-                    }
 
-                    if (is_array($values[$key]) && [] !== $values[$key]) {
-                        $fields[$key] = $values[$key];
-                        continue;
-                    }
-
-                    if (!is_array($values[$key]) && !is_string($values[$key])) {
-                        throw new \RuntimeException('Field values has an incompatible type.');
-                    }
-                }
-            }
-
-            if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
-                return; // field is not in contact
-            }
-
-            $currentValue = $this->getFieldValue($field);
-
-            foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
-                $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
-                if (in_array($aliasToAdd, $currentValue, true)) {
-                    continue;
-                }
-
-                $currentValue[] = $aliasToAdd;
-            }
-
-            foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
-                $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
-                if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
-                    continue;
-                }
-
-                unset($currentValue[$index]);
-            }
-
-            $fieldValue = array_filter(array_values($currentValue));
-
-            if ('select' === $field['type']) {
-                $fieldValue = count($fieldValue) > 0 ? array_pop($fieldValue) : null;
-            }
-            $this->leadModel->setFieldValues($lead, [$field['alias'] => $fieldValue], true);
-            $this->leadModel->saveEntity($lead);
+            $currentValue[] = $aliasToAdd;
         }
+
+        foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
+            $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
+            if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
+                continue;
+            }
+
+            unset($currentValue[$index]);
+        }
+
+        $fieldValue = array_filter(array_values($currentValue));
+
+        if ('select' === $field['type']) {
+            $fieldValue = count($fieldValue) > 0 ? array_pop($fieldValue) : null;
+        }
+        $this->leadModel->setFieldValues($lead, [$field['alias'] => $fieldValue], true);
+        $this->leadModel->saveEntity($lead);
     }
 
     /**
