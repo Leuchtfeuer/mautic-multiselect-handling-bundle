@@ -14,7 +14,8 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListE
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\UnexpectedTypeException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldActionType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -22,9 +23,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FormAction implements EventSubscriberInterface
 {
-    public const ACTION = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage';
-    public const ACTION_FORM = 'mautic.plugin.multiselect_handling.form.actions.contact_segments_manage';
-    public const ACTION_FORM_SELECT = 'mautic.plugin.multiselect_handling.form.actions.contact_select_manage';
+    public const ACTION             = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage';
+
+    // value of this const is misleading, but I'm leaving it as it is, to not break current forms
+    public const ACTION_FORM_UPDATE_CONTACT_MULTISELECT_VALUE = 'mautic.plugin.multiselect_handling.form.actions.contact_segments_manage';
+    public const ACTION_FORM_UPDATE_CONTACT_SELECT_VALUE      = 'mautic.plugin.multiselect_handling.form.actions.contact_select_manage';
 
     public const INVALID_SETUP = 'mautic.plugin.multiselect_handling.actions.contact_segments_manage_validate_invalid_setup';
 
@@ -130,13 +133,13 @@ class FormAction implements EventSubscriberInterface
         }
     }
 
-    public function onActionForm(SubmissionEvent $event): void
+    public function processUpdateMultiselectField(SubmissionEvent $event): void
     {
         if (!$this->config->isPublished()) {
             return;
         }
 
-        if (false === $event->checkContext(FormSubscriber::ACTION_MULTISELECT_CONTACT)) {
+        if (false === $event->checkContext(FormSubscriber::ACTION_UPDATE_MULTISELECT_CONTACT_FIELD)) {
             return;
         }
 
@@ -147,8 +150,8 @@ class FormAction implements EventSubscriberInterface
 
         $action = $event->getAction();
         $fields = [
-            UpdateSelectFieldType::ADD    => [],
-            UpdateSelectFieldType::REMOVE => [],
+            UpdateMultiSelectFieldType::ADD    => [],
+            UpdateMultiSelectFieldType::REMOVE => [],
         ];
 
         $values = $action->getProperties();
@@ -170,13 +173,13 @@ class FormAction implements EventSubscriberInterface
             }
         }
 
-        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
+        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateMultiSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
 
         $currentValue = $this->getFieldValue($field);
 
-        foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
+        foreach ($fields[UpdateMultiSelectFieldType::ADD] as $idAliasToAdd) {
             $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
             if (in_array($aliasToAdd, $currentValue, true)) {
                 continue;
@@ -185,7 +188,7 @@ class FormAction implements EventSubscriberInterface
             $currentValue[] = $aliasToAdd;
         }
 
-        foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
+        foreach ($fields[UpdateMultiSelectFieldType::REMOVE] as $idAliasToRemove) {
             $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
             if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
                 continue;
@@ -203,93 +206,31 @@ class FormAction implements EventSubscriberInterface
         $this->leadModel->saveEntity($lead);
     }
 
-    public function onActionSelectForm(SubmissionEvent $event): void
+    public function processUpdateSelectField(SubmissionEvent $event): void
     {
         if (!$this->config->isPublished()) {
             return;
         }
 
-        if (false === $event->checkContext(FormSubscriber::ACTION_SELECT_CONTACT)) {
+        if (false === $event->checkContext(FormSubscriber::ACTION_UPDATE_SELECT_CONTACT_FIELD)) {
             return;
         }
 
         $lead = $event->getLead();
-        if (null === $lead || !$lead instanceof Lead) {
+        if (!$lead instanceof Lead) {
             return; // no lead to update
         }
 
-        $actions = $event->getForm()->getActions();
-        $enable  = false;
-        foreach ($actions as $action) {
-            if (FormSubscriber::ACTION_SELECT_CONTACT === $action->getType()) {
-                $enable = true;
-                break;
-            }
-        }
-        if (!$enable) {
-            return;
+        $action     = $event->getAction();
+        $properties = $action->getProperties();
+
+        if (null === $field = $this->getCurrentField($lead, (int) $properties[UpdateMultiSelectFieldType::FIELD])) {
+            return; // field is not in contact
         }
 
-        $fields = [
-            UpdateSelectFieldType::ADD    => [],
-            UpdateSelectFieldType::REMOVE => [],
-        ];
-
-        foreach ($actions as $action) {
-            if (FormSubscriber::ACTION_SELECT_CONTACT !== $action->getType()) {
-                continue;
-            }
-            $values = $action->getProperties();
-            foreach ($fields as $key => $item) {
-                if (isset($values[$key])) {
-                    if (is_string($values[$key]) && '' !== $values[$key]) {
-                        $fields[$key] = [$values[$key]];
-                        continue;
-                    }
-
-                    if (is_array($values[$key]) && [] !== $values[$key]) {
-                        $fields[$key] = $values[$key];
-                        continue;
-                    }
-
-                    if (!is_array($values[$key]) && !is_string($values[$key])) {
-                        throw new \RuntimeException('Field values has an incompatible type.');
-                    }
-                }
-            }
-
-            if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
-                return; // field is not in contact
-            }
-
-            $currentValue = $this->getFieldValue($field);
-
-            foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
-                $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
-                if (in_array($aliasToAdd, $currentValue, true)) {
-                    continue;
-                }
-
-                $currentValue[] = $aliasToAdd;
-            }
-
-            foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
-                $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
-                if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
-                    continue;
-                }
-
-                unset($currentValue[$index]);
-            }
-
-            $fieldValue = array_filter(array_values($currentValue));
-
-            if ('select' === $field['type']) {
-                $fieldValue = count($fieldValue) > 0 ? array_pop($fieldValue) : null;
-            }
-            $this->leadModel->setFieldValues($lead, [$field['alias'] => $fieldValue], true);
-            $this->leadModel->saveEntity($lead);
-        }
+        $valueToSet = SegmentsModel::splitAliasId($properties[UpdateSelectFieldActionType::ADD])['alias'];
+        $this->leadModel->setFieldValues($lead, [$field['alias'] => $valueToSet], true);
+        $this->leadModel->saveEntity($lead);
     }
 
     /**
@@ -341,9 +282,9 @@ class FormAction implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            self::ACTION        => 'onAction',
-            self::ACTION_FORM   => 'onActionForm',
-            self::ACTION_FORM_SELECT   => 'onActionSelectForm',
+            self::ACTION                                         => 'onAction',
+            self::ACTION_FORM_UPDATE_CONTACT_MULTISELECT_VALUE   => 'processUpdateMultiselectField',
+            self::ACTION_FORM_UPDATE_CONTACT_SELECT_VALUE        => 'processUpdateSelectField',
         ];
     }
 }

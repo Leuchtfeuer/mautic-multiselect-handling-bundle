@@ -7,16 +7,16 @@ namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener;
 use Mautic\FormBundle\Event\FormBuilderEvent;
 use Mautic\FormBundle\FormEvents;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldActionType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class FormSubscriber implements EventSubscriberInterface
 {
-    public const ACTION                     = 'plugin.multiselectHandlingManageAction';
-    public const ACTION_MULTISELECT_CONTACT = 'plugin.multiselectHandlingContactFieldAction';
-    public const ACTION_SELECT_CONTACT      = 'plugin.multiselectHandlingSelectFieldAction';
+    public const ACTION                                  = 'plugin.multiselectHandlingManageAction';
+    public const ACTION_UPDATE_MULTISELECT_CONTACT_FIELD = 'plugin.multiselectHandlingContactFieldAction';
+    public const ACTION_UPDATE_SELECT_CONTACT_FIELD      = 'plugin.multiselectHandlingContactSelectFieldAction';
 
     public function __construct(private Config $config)
     {
@@ -52,7 +52,7 @@ class FormSubscriber implements EventSubscriberInterface
         );
 
         $event->addSubmitAction(
-            self::ACTION_MULTISELECT_CONTACT,
+            self::ACTION_UPDATE_MULTISELECT_CONTACT_FIELD,
             [
                 // Label to group by in the dropdown
                 'group'       => 'mautic.plugin.multiselect_handling.actions.group',
@@ -60,18 +60,18 @@ class FormSubscriber implements EventSubscriberInterface
                 // Label to list by in the dropdown
                 'label'           => 'mautic.plugin.multiselect_handling.actions.contact_field_action',
                 'description'     => 'mautic.plugin.multiselect_handling.actions.contact_field_action_description',
-                'formType'        => UpdateSelectFieldType::class,
+                'formType'        => UpdateMultiSelectFieldType::class,
                 'formTypeOptions' => [
                     'multiple' => true,
                 ],
 
                 // Callback method to be executed after the submission
-                'eventName'    => FormAction::ACTION_FORM,
+                'eventName'    => FormAction::ACTION_FORM_UPDATE_CONTACT_MULTISELECT_VALUE,
             ]
         );
 
         $event->addSubmitAction(
-            self::ACTION_SELECT_CONTACT,
+            self::ACTION_UPDATE_SELECT_CONTACT_FIELD,
             [
                 // Label to group by in the dropdown
                 'group'       => 'mautic.plugin.multiselect_handling.actions.group',
@@ -85,7 +85,7 @@ class FormSubscriber implements EventSubscriberInterface
                 ],
 
                 // Callback method to be executed after the submission
-                'eventName'    => FormAction::ACTION_FORM_SELECT,
+                'eventName'    => FormAction::ACTION_FORM_UPDATE_CONTACT_SELECT_VALUE,
             ]
         );
     }

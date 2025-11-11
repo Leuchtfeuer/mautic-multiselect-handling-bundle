@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type;
@@ -16,7 +17,6 @@ class UpdateSelectFieldActionType extends AbstractType
 {
     public const FIELD  = 'field';
     public const ADD    = 'multiselect_add';
-    public const REMOVE = 'multiselect_remove';
 
     public function __construct(private LeadFieldChoiceLoader $leadFieldChoiceLoader, private LeadFieldValuesChoiceLoader $leadFieldValuesChoiceLoader)
     {
@@ -57,16 +57,6 @@ class UpdateSelectFieldActionType extends AbstractType
                 'class' => 'form-control',
             ],
             'multiple' => $options['multiple'],
-            'expanded' => false,
-        ])->add(self::REMOVE, ChoiceType::class, [
-            'label'         => $options['multiple'] ? 'mautic.plugin.multiselect_handling.field_action.multiselect_remove' : 'mautic.plugin.multiselect_handling.field_action.select_remove',
-            'required'      => false,
-            'choice_loader' => $this->leadFieldValuesChoiceLoader,
-            'label_attr'    => ['class' => 'control-label'],
-            'attr'          => [
-                'class' => 'form-control',
-            ],
-            'multiple' => true,
             'expanded' => false,
         ]);
     }

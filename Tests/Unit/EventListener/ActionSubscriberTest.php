@@ -13,7 +13,7 @@ use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -130,7 +130,7 @@ class ActionSubscriberTest extends TestCase
             ->willReturn(true);
         $event->expects(self::once())
             ->method('getConfig')
-            ->willReturn(['other' => 'value', UpdateSelectFieldType::FIELD => $fieldId]);
+            ->willReturn(['other' => 'value', UpdateMultiSelectFieldType::FIELD => $fieldId]);
         $event->expects(self::once())
             ->method('getLead')
             ->willReturn($lead);
@@ -177,10 +177,10 @@ class ActionSubscriberTest extends TestCase
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn([
-                'other'                       => 'value',
-                UpdateSelectFieldType::FIELD  => $fieldId,
-                UpdateSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
-                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
+                'other'                            => 'value',
+                UpdateMultiSelectFieldType::FIELD  => $fieldId,
+                UpdateMultiSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
+                UpdateMultiSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'],
             ]);
         $event->expects(self::once())
             ->method('getLead')
@@ -243,10 +243,10 @@ class ActionSubscriberTest extends TestCase
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn([
-                'other'                       => 'value',
-                UpdateSelectFieldType::FIELD  => $fieldId,
-                UpdateSelectFieldType::ADD    => $fieldId.'-alias_add_1',
-                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'], // this actually does not matter, but i'd leave it here
+                'other'                            => 'value',
+                UpdateMultiSelectFieldType::FIELD  => $fieldId,
+                UpdateMultiSelectFieldType::ADD    => $fieldId.'-alias_add_1',
+                UpdateMultiSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'], // this actually does not matter, but i'd leave it here
             ]);
         $event->expects(self::once())
             ->method('getLead')
@@ -294,10 +294,10 @@ class ActionSubscriberTest extends TestCase
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn([
-                'other'                       => 'value',
-                UpdateSelectFieldType::FIELD  => $fieldId,
-                UpdateSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
-                UpdateSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'], // this actually does not matter, but i'd leave it here
+                'other'                            => 'value',
+                UpdateMultiSelectFieldType::FIELD  => $fieldId,
+                UpdateMultiSelectFieldType::ADD    => [$fieldId.'-alias_add_1', $fieldId.'-alias_add_2'],
+                UpdateMultiSelectFieldType::REMOVE => [$fieldId.'-alias_remove_1', $fieldId.'-alias_remove_2'], // this actually does not matter, but i'd leave it here
             ]);
         $event->expects(self::once())
             ->method('getLead')
@@ -345,10 +345,10 @@ class ActionSubscriberTest extends TestCase
         $event->expects(self::once())
             ->method('getConfig')
             ->willReturn([
-                'other'                       => 'value',
-                UpdateSelectFieldType::FIELD  => $fieldId,
-                UpdateSelectFieldType::ADD    => '', // note empty field here
-                UpdateSelectFieldType::REMOVE => [$fieldId.'-'.$fieldValue, $fieldId.'-alias_remove_2'],
+                'other'                            => 'value',
+                UpdateMultiSelectFieldType::FIELD  => $fieldId,
+                UpdateMultiSelectFieldType::ADD    => '', // note empty field here
+                UpdateMultiSelectFieldType::REMOVE => [$fieldId.'-'.$fieldValue, $fieldId.'-alias_remove_2'],
             ]);
         $event->expects(self::once())
             ->method('getLead')

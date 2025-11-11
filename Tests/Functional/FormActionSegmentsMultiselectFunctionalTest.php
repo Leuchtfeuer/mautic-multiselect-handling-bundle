@@ -195,7 +195,7 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
         $action = new Action();
         $action->setName('Manage segments');
         $action->setDescription('action description');
-        $action->setType(FormSubscriber::ACTION_MULTISELECT_CONTACT);
+        $action->setType(FormSubscriber::ACTION_UPDATE_MULTISELECT_CONTACT_FIELD);
         $action->setProperties($properties);
         $action->setForm($formEntity);
         $action->setOrder(1);
