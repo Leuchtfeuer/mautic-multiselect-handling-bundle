@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Validator;
 
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -27,17 +27,17 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             $properties = $value['properties'];
         }
 
-        if (isset($value[UpdateSelectFieldType::FIELD]) && null === $properties) {
+        if (isset($value[UpdateMultiSelectFieldType::FIELD]) && null === $properties) {
             $properties = $value;
         }
 
-        if (!isset($properties[UpdateSelectFieldType::FIELD])) {
+        if (!isset($properties[UpdateMultiSelectFieldType::FIELD])) {
             throw new UnexpectedTypeException(null, 'string');
         }
 
         $fields = [
-            UpdateSelectFieldType::ADD    => [],
-            UpdateSelectFieldType::REMOVE => [],
+            UpdateMultiSelectFieldType::ADD    => [],
+            UpdateMultiSelectFieldType::REMOVE => [],
         ];
 
         foreach ($fields as $key => $item) {
@@ -64,31 +64,31 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             }
         }
 
-        if ([] === $fields[UpdateSelectFieldType::ADD] && [] === $fields[UpdateSelectFieldType::REMOVE]) {
+        if ([] === $fields[UpdateMultiSelectFieldType::ADD] && [] === $fields[UpdateMultiSelectFieldType::REMOVE]) {
             $this->context->buildViolation($constraint->messageEmpty)
                 ->addViolation();
 
             return;
         }
 
-        foreach ([UpdateSelectFieldType::ADD, UpdateSelectFieldType::REMOVE] as $fieldName) {
+        foreach ([UpdateMultiSelectFieldType::ADD, UpdateMultiSelectFieldType::REMOVE] as $fieldName) {
             // check if the value (multi is in array) and is in the same field and add the validation message otherwise
             // stop adding messages if an error found, otherwise add the violation of wrong field value type
-            if ($this->checkValuesFromSameField($fields[$fieldName], (int) $properties[UpdateSelectFieldType::FIELD], $constraint->messageNotSameField)) {
+            if ($this->checkValuesFromSameField($fields[$fieldName], (int) $properties[UpdateMultiSelectFieldType::FIELD], $constraint->messageNotSameField)) {
                 continue;
             }
 
             return;
         }
 
-        if ((count($fields[UpdateSelectFieldType::ADD]) > 0 && 0 === count($fields[UpdateSelectFieldType::REMOVE]))
-            || (count($fields[UpdateSelectFieldType::REMOVE]) > 0 && 0 === count($fields[UpdateSelectFieldType::ADD]))) {
+        if ((count($fields[UpdateMultiSelectFieldType::ADD]) > 0 && 0 === count($fields[UpdateMultiSelectFieldType::REMOVE]))
+            || (count($fields[UpdateMultiSelectFieldType::REMOVE]) > 0 && 0 === count($fields[UpdateMultiSelectFieldType::ADD]))) {
             return; // if one of fields is not set then fields are considered unique
         }
 
         $intersection = array_intersect(
-            $fields[UpdateSelectFieldType::ADD],
-            $fields[UpdateSelectFieldType::REMOVE]
+            $fields[UpdateMultiSelectFieldType::ADD],
+            $fields[UpdateMultiSelectFieldType::REMOVE]
         );
 
         if (0 === count($intersection)) {

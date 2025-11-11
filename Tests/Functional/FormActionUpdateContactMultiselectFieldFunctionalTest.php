@@ -15,7 +15,7 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscrib
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
+class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlTestCase
 {
     private const FIELD_NAME_MULTISELECT = 'test_multiselect_field';
     private const FIELD_NAME_SELECT      = 'test_select_field';
@@ -195,7 +195,7 @@ class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
         $action = new Action();
         $action->setName('Manage segments');
         $action->setDescription('action description');
-        $action->setType(FormSubscriber::ACTION_MULTISELECT_CONTACT);
+        $action->setType(FormSubscriber::ACTION_UPDATE_MULTISELECT_CONTACT_FIELD);
         $action->setProperties($properties);
         $action->setForm($formEntity);
         $action->setOrder(1);

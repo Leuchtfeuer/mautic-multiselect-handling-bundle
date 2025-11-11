@@ -41,8 +41,8 @@ class AjaxController extends CommonAjaxController
         if (!$fieldEntity) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field entity not found']);
         }
-        if (!$fieldEntity->getType() || 'multiselect' !== $fieldEntity->getType()) {
-            return $this->sendJsonResponse(['success' => 0, 'message' => 'Field is not a multiselect']);
+        if (!$fieldEntity->getType() || (!in_array($fieldEntity->getType(), ['multiselect', 'select']))) {
+            return $this->sendJsonResponse(['success' => 0, 'message' => 'Field is not a multiselect or select']);
         }
         if (!$fieldEntity->getProperties()) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field properties are not set']);
@@ -56,7 +56,7 @@ class AjaxController extends CommonAjaxController
         }
         foreach ($list as $key => $value) {
             $list[$key]['label'] = '('.$fieldEntity->getName().') '.$value['label'];
-            $list[$key]['value'] = $fieldEntity->getId().'-'.$value['label'];
+            $list[$key]['value'] = $fieldEntity->getId().'-'.$value['value'];
         }
 
         return $this->sendJsonResponse(['success' => 1, 'data' => $list]);

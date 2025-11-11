@@ -10,7 +10,7 @@ use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\UnexpectedTypeException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -41,13 +41,13 @@ class ActionSubscriber implements EventSubscriberInterface
 
         $values = $event->getConfig();
 
-        if (!isset($values[UpdateSelectFieldType::FIELD])) {
+        if (!isset($values[UpdateMultiSelectFieldType::FIELD])) {
             throw new \RuntimeException('Invalid event configuration.');
         }
 
         $fields = [
-            UpdateSelectFieldType::ADD    => [],
-            UpdateSelectFieldType::REMOVE => [],
+            UpdateMultiSelectFieldType::ADD    => [],
+            UpdateMultiSelectFieldType::REMOVE => [],
         ];
         foreach ($fields as $key => $item) {
             if (isset($values[$key])) {
@@ -73,13 +73,13 @@ class ActionSubscriber implements EventSubscriberInterface
             return; // no lead to update
         }
 
-        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
+        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateMultiSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
 
         $currentValue = $this->getFieldValue($field, false);
 
-        foreach ($fields[UpdateSelectFieldType::ADD] as $idAliasToAdd) {
+        foreach ($fields[UpdateMultiSelectFieldType::ADD] as $idAliasToAdd) {
             $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
             if (in_array($aliasToAdd, $currentValue, true)) {
                 continue;
@@ -88,7 +88,7 @@ class ActionSubscriber implements EventSubscriberInterface
             $currentValue[] = $aliasToAdd;
         }
 
-        foreach ($fields[UpdateSelectFieldType::REMOVE] as $idAliasToRemove) {
+        foreach ($fields[UpdateMultiSelectFieldType::REMOVE] as $idAliasToRemove) {
             $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
             if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
                 continue;
@@ -127,7 +127,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
         $lead = $event->getLead();
 
-        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateSelectFieldType::FIELD])) {
+        if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateMultiSelectFieldType::FIELD])) {
             return; // field is not in contact
         }
 

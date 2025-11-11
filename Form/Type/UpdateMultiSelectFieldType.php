@@ -13,7 +13,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-class UpdateSelectFieldType extends AbstractType
+class UpdateMultiSelectFieldType extends AbstractType
 {
     public const FIELD  = 'field';
     public const ADD    = 'multiselect_add';

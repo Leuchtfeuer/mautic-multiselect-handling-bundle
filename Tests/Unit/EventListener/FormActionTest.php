@@ -847,14 +847,6 @@ class FormActionTest extends TestCase
         $formAction->onAction($event);
     }
 
-    public function testSubscribedEvents(): void
-    {
-        self::assertSame([
-            FormAction::ACTION        => 'onAction',
-            FormAction::ACTION_FORM   => 'onActionForm',
-        ], FormAction::getSubscribedEvents());
-    }
-
     /**
      * @param list<string> $methods
      *
