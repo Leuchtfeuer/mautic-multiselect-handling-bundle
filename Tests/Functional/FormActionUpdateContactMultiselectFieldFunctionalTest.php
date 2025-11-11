@@ -15,7 +15,7 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscrib
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class FormActionSegmentsMultiselectFunctionalTest extends MauticMysqlTestCase
+class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlTestCase
 {
     private const FIELD_NAME_MULTISELECT = 'test_multiselect_field';
     private const FIELD_NAME_SELECT      = 'test_select_field';

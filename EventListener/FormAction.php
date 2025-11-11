@@ -228,7 +228,7 @@ class FormAction implements EventSubscriberInterface
             return; // field is not in contact
         }
 
-        $valueToSet = SegmentsModel::splitAliasId($properties[UpdateSelectFieldActionType::ADD])['alias'];
+        $valueToSet = SegmentsModel::splitAliasId($properties[UpdateSelectFieldActionType::FIELD_SELECT_VALUE])['alias'];
         $this->leadModel->setFieldValues($lead, [$field['alias'] => $valueToSet], true);
         $this->leadModel->saveEntity($lead);
     }
