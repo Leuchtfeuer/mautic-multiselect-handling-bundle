@@ -6,11 +6,9 @@ namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type;
 
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldValuesChoiceLoader;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Validator\UniqueMultiselectValues;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UpdateSelectFieldActionType extends AbstractType
@@ -50,7 +48,7 @@ class UpdateSelectFieldActionType extends AbstractType
             'expanded' => false,
         ])->add(self::FIELD_SELECT_VALUE, ChoiceType::class, [
             'label'         => 'mautic.plugin.multiselect_handling.field_action.select_add',
-            'required'      => false,
+            'required'      => true,
             'choice_loader' => $this->leadFieldValuesChoiceLoader,
             'label_attr'    => ['class' => 'control-label'],
             'attr'          => [
@@ -58,13 +56,6 @@ class UpdateSelectFieldActionType extends AbstractType
             ],
             'multiple' => false,
             'expanded' => false,
-        ]);
-    }
-
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefault('constraints', [
-            new UniqueMultiselectValues(),
         ]);
     }
 }

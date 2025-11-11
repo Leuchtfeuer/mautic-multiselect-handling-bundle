@@ -80,9 +80,6 @@ class FormSubscriber implements EventSubscriberInterface
                 'label'           => 'mautic.plugin.multiselect_handling.actions.contact_select_field_action',
                 'description'     => 'mautic.plugin.multiselect_handling.actions.contact_select_field_action_description',
                 'formType'        => UpdateSelectFieldActionType::class,
-                'formTypeOptions' => [
-                    'multiple' => false,
-                ],
 
                 // Callback method to be executed after the submission
                 'eventName'    => FormAction::ACTION_FORM_UPDATE_CONTACT_SELECT_VALUE,
