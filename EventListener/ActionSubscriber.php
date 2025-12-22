@@ -121,7 +121,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
         $values = $event->getConfig();
 
-        if (!isset($values[SettingsType::FIELD], $values[SettingsType::CHECKBOX])) {
+        if (!isset($values[SettingsType::FIELD]) || !array_key_exists(SettingsType::CHECKBOX, $values)) {
             throw new \RuntimeException('Invalid event configuration.');
         }
 

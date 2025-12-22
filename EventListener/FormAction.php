@@ -56,7 +56,7 @@ class FormAction implements EventSubscriberInterface
 
         $actionProperties = $action->getProperties();
 
-        if (!isset($actionProperties[SettingsType::FIELD], $actionProperties[SettingsType::CHECKBOX])) {
+        if (!isset($actionProperties[SettingsType::FIELD]) || !array_key_exists(SettingsType::CHECKBOX, $actionProperties)) {
             throw new ValidationException('Seems like you do not have proper SettingsType.');
         }
 

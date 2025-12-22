@@ -602,7 +602,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         $event->setTriggerMode('immediate');
         $event->setProperties([
             SettingsType::FIELD    => $fieldId,
-            SettingsType::CHECKBOX => $createMissing ? '1' : '0',
+            SettingsType::CHECKBOX => $createMissing ? '1' : null,
         ]);
 
         $this->em->persist($event);

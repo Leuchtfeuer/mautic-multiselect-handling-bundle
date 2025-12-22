@@ -477,7 +477,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
                     'type'        => FormSubscriber::ACTION,
                     'properties'  => [
                         SettingsType::FIELD    => $fieldId,
-                        SettingsType::CHECKBOX => $createMissing ? '1' : '0',
+                        SettingsType::CHECKBOX => $createMissing ? '1' : null,
                     ],
                     'order'       => 1,
                 ],
