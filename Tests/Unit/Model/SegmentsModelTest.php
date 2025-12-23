@@ -87,7 +87,7 @@ class SegmentsModelTest extends TestCase
      *
      * @dataProvider invalidSegmentData
      */
-    public function testInvalidSegmentsReturnsNull(array $segmentsData): void
+    public function testInvalidSegmentsReturnsEmptyArray(array $segmentsData): void
     {
         $fieldId               = 123;
         $segmentAlias          = 'segment_alias';
@@ -114,7 +114,7 @@ class SegmentsModelTest extends TestCase
             ->method('saveEntity');
 
         $segmentsModel = new SegmentsModel($listModel, $leadFieldChoiceLoader);
-        self::assertNull($segmentsModel->getSegments($fieldId, false));
+        self::assertSame([], $segmentsModel->getSegments($fieldId, false));
     }
 
     public function testNotExistingSegmentAndNoCreateNewSegments(): void
@@ -144,13 +144,8 @@ class SegmentsModelTest extends TestCase
         $listModel->expects(self::never())
             ->method('saveEntity');
 
-        $this->expectException(NonExistingListException::class);
-        $this->expectExceptionMessage('Segment does not exist.');
-
         $segmentsModel = new SegmentsModel($listModel, $leadFieldChoiceLoader);
-        $segmentsModel->getSegments($fieldId, false);
-
-        self::fail('After exception.');
+        self::assertSame([], $segmentsModel->getSegments($fieldId, false));
     }
 
     public function testGetSegmentsOk(): void

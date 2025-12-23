@@ -7,7 +7,6 @@ namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\ListModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupException;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 
 class SegmentsModel
@@ -17,9 +16,9 @@ class SegmentsModel
     }
 
     /**
-     * @return array<int, string>|null
+     * @return array<int, string>
      */
-    public function getSegments(int $multiselectFieldId, bool $createNew): ?array
+    public function getSegments(int $multiselectFieldId, bool $createNew): array
     {
         $choices = $this->leadFieldChoiceLoader->loadFieldsForChoices([$multiselectFieldId]);
 
@@ -50,17 +49,13 @@ class SegmentsModel
 
                     $this->listModel->saveEntity($newSegment);
                     $segments[$newSegment->getId()] = $newSegment->getAlias();
-
-                    continue;
                 }
-
-                throw new NonExistingListException();
+                continue;
             }
 
             $segmentData = array_pop($segmentsData);
-
             if (!is_array($segmentData) || !isset($segmentData['id'], $segmentData['alias'])) {
-                return null;
+                continue;
             }
 
             $segments[(int) $segmentData['id']] = $segmentData['alias'];

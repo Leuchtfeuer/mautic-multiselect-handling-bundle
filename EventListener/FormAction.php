@@ -92,8 +92,6 @@ class FormAction implements EventSubscriberInterface
             }
         } catch (InvalidSetupException) {
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
-        } catch (NonExistingListException) {
-            throw new ValidationException($this->translator->trans(self::NON_EXISTING_LIST));
         }
 
         /** @var LeadList[] $currentSegments */

@@ -494,7 +494,7 @@ class ActionSubscriberTest extends TestCase
         $subscriber->onManageSegmentsAction($event);
     }
 
-    public function testManageSegmentsActionInvalidSegments(): void
+    public function testManageSegmentsActionNotExistingSegments(): void
     {
         $config                    = $this->createMock(Config::class);
         $config->expects(self::once())
@@ -536,10 +536,7 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::once())
             ->method('getSegments')
             ->with($fieldId, false)
-            ->willReturn(null);
-
-        $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Invalid setup.');
+            ->willReturn([]);
 
         $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($event);
