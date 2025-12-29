@@ -224,7 +224,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     public function testFunctionalMultiselectWithoutCreatingMissingButMissingSegment(): void
     {
-        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        $selectedSegments    = $segments = $this->created['segments'] = $this->createSegments();
         $createdSegmentAlias = 'createdsegmentname';
         $fieldId             = $this->created['contact_field'] = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
         $contact             = $this->created['contact'] = $this->createContact();
@@ -398,7 +398,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     public function testFunctionalSingleSelectWithoutCreatingMissingButMissingSegment(): void
     {
-        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        $selectedSegments    = $segments = $this->created['segments'] = $this->createSegments();
         $createdSegmentAlias = 'createdsegmentname';
         $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
         $contact             = $this->created['contact'] = $this->createContact();
@@ -436,7 +436,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     public function testFunctionalSingleSelectWithMissingSegmentsIgnored(): void
     {
-        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
+        $selectedSegments    = $segments = $this->created['segments'] = $this->createSegments();
         $createdSegmentAlias = 'createdsegmentname';
         $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
         $contact             = $this->created['contact'] = $this->createContact();
