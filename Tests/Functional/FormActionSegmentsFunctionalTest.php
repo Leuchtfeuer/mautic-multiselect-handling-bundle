@@ -245,8 +245,8 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
             'mauticform[select_segments]' => [$segments[0]['alias'], $segments[2]['alias'], $createdSegmentAlias],
         ]);
 
-        // adds: api-segment-d
-        // removes: api-segment-c
+        // adds: api-segment-c
+        // removes: api-segment-d
         // unchanged: api-segment-a (selected by user)
         // unchanged: api-segment-b (not in the $selectedSegments list)
         $this->client->submit($form);
