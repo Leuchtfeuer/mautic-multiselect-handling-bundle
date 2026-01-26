@@ -10,7 +10,6 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupException;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\UnexpectedTypeException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
@@ -56,7 +55,7 @@ class FormAction implements EventSubscriberInterface
 
         $actionProperties = $action->getProperties();
 
-        if (!isset($actionProperties[SettingsType::FIELD], $actionProperties[SettingsType::CHECKBOX])) {
+        if (!isset($actionProperties[SettingsType::FIELD]) || !array_key_exists(SettingsType::CHECKBOX, $actionProperties)) {
             throw new ValidationException('Seems like you do not have proper SettingsType.');
         }
 
@@ -92,8 +91,6 @@ class FormAction implements EventSubscriberInterface
             }
         } catch (InvalidSetupException) {
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
-        } catch (NonExistingListException) {
-            throw new ValidationException($this->translator->trans(self::NON_EXISTING_LIST));
         }
 
         /** @var LeadList[] $currentSegments */

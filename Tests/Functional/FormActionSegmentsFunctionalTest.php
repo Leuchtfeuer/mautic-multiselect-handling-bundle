@@ -224,13 +224,14 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     public function testFunctionalMultiselectWithoutCreatingMissingButMissingSegment(): void
     {
-        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
-        unset($selectedSegments[1]);
+        $selectedSegments    = $segments = $this->created['segments'] = $this->createSegments();
+        unset($selectedSegments[1]); // removed: api-segment-b
         $createdSegmentAlias = 'createdsegmentname';
         $fieldId             = $this->created['contact_field'] = $this->testCreateMultiselectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
         $contact             = $this->created['contact'] = $this->createContact();
         $formId              = $this->created['form'] = $this->createForm($fieldId, false, true);
 
+        // api-segment-a, api-segment-b, api-segment-d
         $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
 
         $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
@@ -240,14 +241,20 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $form->disableValidation();
         $form->setValues([
             'mauticform[email]'           => $contact['fields']['core']['email']['value'],
+            // api-segment-a, api-segment-c, createdsegmentname
             'mauticform[select_segments]' => [$segments[0]['alias'], $segments[2]['alias'], $createdSegmentAlias],
         ]);
+
+        // adds: api-segment-c
+        // removes: api-segment-d
+        // unchanged: api-segment-a (selected by user)
+        // unchanged: api-segment-b (not in the $selectedSegments list)
         $this->client->submit($form);
 
         $clientResponse = $this->client->getResponse();
 
         self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        self::assertSame('https://localhost/form/'.$formId.'?mauticError=Errors%3A%3Cbr%20%2F%3E%3Col%3E%3Cli%3EGiven%20list%20does%20not%20exist.%3C%2Fli%3E%3C%2Fol%3E#submission', $clientResponse->headers->get('Location'));
+        self::assertSame('https://localhost/form/'.$formId, $clientResponse->headers->get('Location'));
         $this->client->followRedirect();
 
         $clientResponse = $this->client->getResponse();
@@ -258,13 +265,11 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         /** @var LeadList[] $lists */
         $lists = $leadListRepository->getLeadLists($contact['id']);
 
-        self::assertCount(3, $lists);
-        $list = array_pop($lists);
-        self::assertSame($segments[3]['id'], $list->getId());
-        $list = array_pop($lists);
-        self::assertSame($segments[1]['id'], $list->getId());
-        $list = array_pop($lists);
-        self::assertSame($segments[0]['id'], $list->getId());
+        $actualAliases = array_map(fn (LeadList $list) => $list->getAlias(), $lists);
+        self::assertCount(3, $actualAliases);
+        self::assertContains($segments[0]['alias'], $actualAliases); // api-segment-a
+        self::assertContains($segments[1]['alias'], $actualAliases); // api-segment-b
+        self::assertContains($segments[2]['alias'], $actualAliases); // api-segment-c
     }
 
     public function testFunctionalSingleSelectWithoutCreatingMissing(): void
@@ -399,8 +404,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 
     public function testFunctionalSingleSelectWithoutCreatingMissingButMissingSegment(): void
     {
-        $selectedSegments = $segments = $this->created['segments'] = $this->createSegments();
-        unset($selectedSegments[1]);
+        $selectedSegments    = $segments = $this->created['segments'] = $this->createSegments();
         $createdSegmentAlias = 'createdsegmentname';
         $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
         $contact             = $this->created['contact'] = $this->createContact();
@@ -422,7 +426,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $clientResponse = $this->client->getResponse();
 
         self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
-        self::assertSame('https://localhost/form/'.$formId.'?mauticError=Errors%3A%3Cbr%20%2F%3E%3Col%3E%3Cli%3EGiven%20list%20does%20not%20exist.%3C%2Fli%3E%3C%2Fol%3E#submission', $clientResponse->headers->get('Location'));
+        self::assertSame('https://localhost/form/'.$formId, $clientResponse->headers->get('Location'));
         $this->client->followRedirect();
 
         $clientResponse = $this->client->getResponse();
@@ -433,13 +437,47 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         /** @var LeadList[] $lists */
         $lists = $leadListRepository->getLeadLists($contact['id']);
 
-        self::assertCount(3, $lists);
+        self::assertCount(0, $lists);
+    }
+
+    public function testFunctionalSingleSelectWithMissingSegmentsIgnored(): void
+    {
+        $selectedSegments    = $segments = $this->created['segments'] = $this->createSegments();
+        $createdSegmentAlias = 'createdsegmentname';
+        $fieldId             = $this->created['contact_field'] = $this->testCreateSingleSelectField(array_merge($selectedSegments, [['name' => 'Created segment name', 'alias' => $createdSegmentAlias]]));
+        $contact             = $this->created['contact'] = $this->createContact();
+        $formId              = $this->created['form'] = $this->createForm($fieldId, false, false);
+
+        $this->leadModel->addToLists(['id' => $contact['id']], [$segments[0]['id'], $segments[1]['id'], $segments[3]['id']]);
+
+        $crawler     = $this->client->request(Request::METHOD_GET, '/form/'.$formId);
+        $formCrawler = $crawler->filter('form[id=mauticform_submissiontestform]');
+        self::assertCount(1, $formCrawler, (string) $this->client->getResponse()->getContent());
+        $form = $formCrawler->form();
+        $form->disableValidation();
+        $form->setValues([
+            'mauticform[email]'           => $contact['fields']['core']['email']['value'],
+            'mauticform[select_segments]' => $segments[2]['alias'],
+        ]);
+        $this->client->submit($form);
+
+        $clientResponse = $this->client->getResponse();
+
+        self::assertSame(Response::HTTP_FOUND, $clientResponse->getStatusCode(), $clientResponse->getContent());
+        self::assertSame('https://localhost/form/'.$formId, $clientResponse->headers->get('Location'));
+        $this->client->followRedirect();
+
+        $clientResponse = $this->client->getResponse();
+        self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
+
+        /** @var LeadListRepository $leadListRepository */
+        $leadListRepository = $this->leadModel->getLeadListRepository();
+        /** @var LeadList[] $lists */
+        $lists = $leadListRepository->getLeadLists($contact['id']);
+
+        self::assertCount(1, $lists);
         $list = array_pop($lists);
-        self::assertSame($segments[3]['id'], $list->getId());
-        $list = array_pop($lists);
-        self::assertSame($segments[1]['id'], $list->getId());
-        $list = array_pop($lists);
-        self::assertSame($segments[0]['id'], $list->getId());
+        self::assertSame($segments[2]['id'], $list->getId());
     }
 
     private function createForm(int $fieldId, bool $createMissing, bool $multiSelect): int
@@ -477,7 +515,7 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
                     'type'        => FormSubscriber::ACTION,
                     'properties'  => [
                         SettingsType::FIELD    => $fieldId,
-                        SettingsType::CHECKBOX => $createMissing ? '1' : '0',
+                        SettingsType::CHECKBOX => $createMissing ? '1' : null,
                     ],
                     'order'       => 1,
                 ],

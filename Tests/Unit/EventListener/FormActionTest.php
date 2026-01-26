@@ -16,7 +16,6 @@ use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormAction;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\NonExistingListException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
@@ -387,7 +386,7 @@ class FormActionTest extends TestCase
         $formAction->onAction($event);
     }
 
-    public function testOnActionInvalidSegments(): void
+    public function testOnActionNonExistingSegments(): void
     {
         $leadFieldChoiceLoader     = $this->createMock(LeadFieldChoiceLoader::class);
         $translator                = $this->createMock(TranslatorInterface::class);
@@ -435,25 +434,20 @@ class FormActionTest extends TestCase
             ->method('getAlias')
             ->willReturn($leadFieldAlias);
 
-        $translator->expects(self::once())
-            ->method('trans')
-            ->with(FormAction::INVALID_SETUP)
-            ->willReturn($exceptionMessage);
-
         $segmentsModel->expects(self::once())
             ->method('getSegments')
             ->with($fieldId, false)
-            ->willReturn(null);
+            ->willReturn([]);
 
-        $leadModel->expects(self::never())
-            ->method('getLists');
+        $leadModel->expects(self::once())
+            ->method('getLists')
+            ->with($lead)
+            ->willReturn([]);
+
         $leadModel->expects(self::never())
             ->method('removeFromLists');
         $leadModel->expects(self::never())
             ->method('addToLists');
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($exceptionMessage);
 
         $formAction = new FormAction($config, $leadFieldChoiceLoader, $translator, $leadModel, $segmentsModel);
         $formAction->onAction($event);
@@ -483,7 +477,6 @@ class FormActionTest extends TestCase
         $config                    = $this->createMock(Config::class);
         $leadFieldAlias            = 'field_alias';
         $fieldId                   = 1224;
-        $exceptionMessage          = 'Exception!';
         $actionProperties          = [SettingsType::FIELD => $fieldId, SettingsType::CHECKBOX => '0'];
 
         $config->expects(self::once())
@@ -518,25 +511,19 @@ class FormActionTest extends TestCase
             ->method('getAlias')
             ->willReturn($leadFieldAlias);
 
-        $translator->expects(self::once())
-            ->method('trans')
-            ->with(FormAction::NON_EXISTING_LIST)
-            ->willReturn($exceptionMessage);
-
         $segmentsModel->expects(self::once())
             ->method('getSegments')
             ->with($fieldId, false)
-            ->willThrowException(new NonExistingListException());
+            ->willReturn([]);
 
-        $leadModel->expects(self::never())
-            ->method('getLists');
+        $leadModel->expects(self::once())
+            ->method('getLists')
+            ->willReturn([]);
+
         $leadModel->expects(self::never())
             ->method('removeFromLists');
         $leadModel->expects(self::never())
             ->method('addToLists');
-
-        $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage($exceptionMessage);
 
         $formAction = new FormAction($config, $leadFieldChoiceLoader, $translator, $leadModel, $segmentsModel);
         $formAction->onAction($event);
