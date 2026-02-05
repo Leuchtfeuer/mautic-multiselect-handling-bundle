@@ -1,27 +1,36 @@
-## Multiselect Handling by Leuchtfeuer - Mautic 5 Version
+## Multiselect Handling by Leuchtfeuer
 Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect”. Handling of fieldtype "Select" was introduced in later version, thus the naming "multiselect".
 
 
-## Installation / Integration
-* Folder name for this plugin has to be LeuchtfeuerMultiselectHandlingBundle.
-* Clear the cache.
-* In Mautic UI "Plugins" click "Install/Upgrade Plugins".
-* Click on "Leuchtfeuer Multiselect Handling" and activate it with "Yes".
-* In some cases you'll need to execute a console command `./bin/console mautic:assets:generate`.
+## Requirements for this release
+> [!TIP]
+> Other releases of this plugin may cover different Mautic versions!
+- Mautic 5.x (min. 5.1)
 
-## Features
+## Installation
+### Composer
+This plugin can be installed through composer.
+### Manual Installation
+Alternatively, it can be installed manually, following the usual steps:
+- Download the plugin
+- Unzip to the Mautic `plugins` directory
+- Rename folder to `BundleName`
+- In the Mautic backend, go to the `Plugins` page as an administrator
+- Click on the `Install/Upgrade Plugins` button to install the Plugin.
+OR
+- If you have shell access, execute `php bin\console cache:clear` and `php bin\console mautic:plugins:reload` to install the plugins.
 
-### Form Action "Modify Segment Membership based on Multiselect"
+## Configuration
+
+## Role Permissions
+
+## Usage
+
+### Form Action
 1. Set up custom field(s) with multiselect or select type, which will contain a list of Segments for synchronization. Needs to have the same alias.
-2. Map checkbox group or select field in the form to the custom field from 1
-3. Add form action "Modify Segment Membership based on Multiselect"
+2. Add form action "Modify Segment Membership based on Multiselect".
 
-After form is submitted the Contact will be added/removed to/from segments according to the selection made in the form fields.
-
-### Form Action "Change contact's multiselect field"
-1. Select managed multiselect field.
-2. Select values to add to multiselect field. In case this value is empty no values will be added.
-3. Select values to remove from multiselect field. In case this value is empty no values will be removed.
+After form is submitted the Contact will be added/removed to/from segments according to the multiselect or select value(s) selected in the form action.
 
 ### Campaign action "Change contact's multiselect field"
 1. Select managed multiselect field.
@@ -39,8 +48,34 @@ After form is submitted the Contact will be added/removed to/from segments accor
 
 
 Add or remove segments based on this contacts “select” or “multiselect” field values. Values present in the contact field will be added as segments. Values not present, but available in multiselect field, indicate segments to be removed.
+## API support
+## Known Issues
+List any current issues or limitations.
+## Troubleshooting
+Make sure you have not only installed but also enabled the Plugin.
+If things are still funny, please try
+`php bin/console cache:clear`
 
-### Author
+## Change log
+- https://github.com/Leuchtfeuer/`bundle-name`/releases
+## Future Ideas
+Mention any planned updates, features, or ideas for future development.
+## Sponsoring & Commercial Support
+We are continuously improving our plugins. If you are requiring priority support or custom features, please contact us at mautic-plugins@leuchtfeuer.com.
+## Get Involved
+Feel free to open issues or submit pull requests on [GitHub](#). Follow the contribution guidelines in `CONTRIBUTING.md`.”
+## Credits
+@beetofly
+@biozshock
+@ekkeguembel
+@lenonleite
+@LeonOltmanns
+@PatrickJenkner
+## Author
 Leuchtfeuer Digital Marketing GmbH
-
-mautic@Leuchtfeuer.com
+Please raise any issues in GitHub.
+For all other things, please email mautic-plugins@Leuchtfeuer.com
+## License
+“This plugin is licensed under the MIT License. See the `LICENSE` file for more details.”
+## Resources / Further Readings
+Provide links to any related resources or further readings.
