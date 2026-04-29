@@ -1,7 +1,7 @@
 {
     "name": "leuchtfeuer/mautic-multiselect-handling",
     "description": "A Mautic plugin that improves the handling of multiselect contact fields in forms and campaigns.",
-    "license": "GPL-3.0-or-later",
+    "license": "GPL-3.0",
     "type": "mautic-plugin",
     "authors": [
         {
