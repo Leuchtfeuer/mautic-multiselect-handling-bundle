@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
 {
+    protected bool $authenticateApi = true;
+
     private LeadModel $leadModel;
 
     protected $useCleanupRollback = false;
@@ -69,13 +71,13 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
     {
         parent::setUp();
         $this->activatePlugin(true);
-        $this->leadModel = self::$container->get(LeadModel::class);
+        $this->leadModel = $this->getContainer()->get(LeadModel::class);
         $this->client->followRedirects(false);
     }
 
     protected function beforeTearDown(): void
     {
-        $tablePrefix = self::$container->getParameter('mautic.db_table_prefix');
+        $tablePrefix = $this->getContainer()->getParameter('mautic.db_table_prefix');
 
         // Cleanup
         self::ensureKernelShutdown();
@@ -119,11 +121,11 @@ class FormActionSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->client->request('GET', '/s/plugins/reload');
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'Leuchtfeuermultiselecthandling']);
         if (empty($integration)) {
             $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
             $integration = new Integration();
-            $integration->setName('LeuchtfeuerMultiselect');
+            $integration->setName('Leuchtfeuermultiselecthandling');
             $integration->setPlugin($plugin);
         }
         $integration->setIsPublished($isPublished);

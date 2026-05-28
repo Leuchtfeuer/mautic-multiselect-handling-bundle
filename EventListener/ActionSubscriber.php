@@ -149,7 +149,7 @@ class ActionSubscriber implements EventSubscriberInterface
         $createMissing = (bool) $config[SettingsType::CHECKBOX];
 
         $availableSegments = $this->segmentsModel->getSegments($fieldId, $createMissing);
-        if (null === $availableSegments) {
+        if (empty($availableSegments)) {
             $pendingEvent->failAll('Invalid setup.');
             return;
         }

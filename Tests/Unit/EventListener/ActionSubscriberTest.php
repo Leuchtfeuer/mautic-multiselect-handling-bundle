@@ -194,7 +194,7 @@ class ActionSubscriberTest extends TestCase
         $segmentsModel->expects(self::once())
             ->method('getSegments')
             ->with($fieldId, false)
-            ->willReturn(null);
+            ->willReturn([]);
 
         $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
         $subscriber->onManageSegmentsAction($pendingEvent);

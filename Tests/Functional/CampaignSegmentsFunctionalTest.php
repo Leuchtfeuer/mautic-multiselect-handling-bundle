@@ -23,6 +23,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 {
+    protected bool $authenticateApi = true;
+
     private LeadModel $leadModel;
 
     private const FIELD_NAME = 'test_field';
@@ -80,7 +82,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->leadModel = self::$container->get(LeadModel::class);
+        $this->leadModel = $this->getContainer()->get(LeadModel::class);
         $this->activatePlugin(true);
     }
 
@@ -134,11 +136,11 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         $this->client->request('GET', '/s/plugins/reload');
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());
 
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
+        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'Leuchtfeuermultiselecthandling']);
         if (empty($integration)) {
             $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
             $integration = new Integration();
-            $integration->setName('LeuchtfeuerMultiselect');
+            $integration->setName('Leuchtfeuermultiselecthandling');
             $integration->setPlugin($plugin);
         }
         $integration->setIsPublished($isPublished);

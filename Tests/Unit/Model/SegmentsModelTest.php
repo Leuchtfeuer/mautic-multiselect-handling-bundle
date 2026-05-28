@@ -192,25 +192,25 @@ class SegmentsModelTest extends TestCase
         $listModel->expects($invokedCount)
             ->method('getUserLists')
             ->willReturnCallback(function (string $alias) use ($removeSegmentAlias, $existingSegmentAlias, $createSegmentAliasClean, $segmentsData, $segmentAlias, $listModel, $invokedCount) {
-                if (1 === $invokedCount->getInvocationCount()) {
+                if (1 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($listModel->cleanAlias($segmentAlias, '', 0, '-'), $alias);
 
                     return $segmentsData[0];
                 }
 
-                if (2 === $invokedCount->getInvocationCount()) {
+                if (2 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($createSegmentAliasClean, $alias);
 
                     return $segmentsData[1];
                 }
 
-                if (3 === $invokedCount->getInvocationCount()) {
+                if (3 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($listModel->cleanAlias($existingSegmentAlias, '', 0, '-'), $alias);
 
                     return $segmentsData[2];
                 }
 
-                if (4 === $invokedCount->getInvocationCount()) {
+                if (4 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($listModel->cleanAlias($removeSegmentAlias, '', 0, '-'), $alias);
 
                     return $segmentsData[3];

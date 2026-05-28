@@ -50,25 +50,25 @@ class LeadFieldChoiceLoaderTest extends TestCase
             $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
                 ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
-                    if (1 === $invokedCount->getInvocationCount()) {
+                    if (1 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (2 === $invokedCount->getInvocationCount()) {
+                    if (2 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
                     }
 
-                    if (3 === $invokedCount->getInvocationCount()) {
+                    if (3 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (4 === $invokedCount->getInvocationCount()) {
+                    if (4 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
@@ -175,13 +175,13 @@ class LeadFieldChoiceLoaderTest extends TestCase
             $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
                 ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
-                    if (1 === $invokedCount->getInvocationCount()) {
+                    if (1 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (2 === $invokedCount->getInvocationCount()) {
+                    if (2 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
@@ -235,13 +235,13 @@ class LeadFieldChoiceLoaderTest extends TestCase
             $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
                 ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
-                    if (1 === $invokedCount->getInvocationCount()) {
+                    if (1 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (2 === $invokedCount->getInvocationCount()) {
+                    if (2 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
