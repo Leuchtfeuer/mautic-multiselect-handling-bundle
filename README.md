@@ -5,7 +5,7 @@ Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect�
 ## Requirements for this release
 > [!TIP]
 > Other releases of this plugin may cover different Mautic versions!
-- Mautic 5.x (min. 5.1)
+- Mautic 7
 
 ## Installation
 ### Composer

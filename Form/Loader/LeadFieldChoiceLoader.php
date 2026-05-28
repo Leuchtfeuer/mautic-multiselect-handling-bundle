@@ -31,7 +31,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
      *
      * @return ChoiceListInterface<string, int>
      */
-    public function loadChoiceList($value = null)
+    public function loadChoiceList(?callable $value = null): ChoiceListInterface
     {
         if (null !== $this->choiceList) {
             return $this->choiceList;

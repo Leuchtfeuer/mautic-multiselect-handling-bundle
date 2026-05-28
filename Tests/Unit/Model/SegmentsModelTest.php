@@ -224,7 +224,6 @@ class SegmentsModelTest extends TestCase
                 self::assertSame($createSegmentAliasClean, $leadList->getAlias());
                 self::assertSame($createSegmentName, $leadList->getName());
                 $reflection = new \ReflectionProperty(LeadList::class, 'id');
-                $reflection->setAccessible(true);
                 $reflection->setValue($leadList, $createdSegmentId);
             });
 
@@ -240,7 +239,7 @@ class SegmentsModelTest extends TestCase
     /**
      * @return array<array<bool>>
      */
-    public function trueFalse(): array
+    public static function trueFalse(): array
     {
         return [
             [true],
@@ -251,7 +250,7 @@ class SegmentsModelTest extends TestCase
     /**
      * @return array<array<mixed>>
      */
-    public function invalidProperties(): array
+    public static function invalidProperties(): array
     {
         return [
             [[]],
@@ -263,7 +262,7 @@ class SegmentsModelTest extends TestCase
     /**
      * @return array<array<mixed>>
      */
-    public function invalidSegmentData(): array
+    public static function invalidSegmentData(): array
     {
         return [
             [['not array']],

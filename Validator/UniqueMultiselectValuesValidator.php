@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class UniqueMultiselectValuesValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint): void
+    public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof UniqueMultiselectValues) {
             throw new UnexpectedTypeException($constraint, UniqueMultiselectValues::class);

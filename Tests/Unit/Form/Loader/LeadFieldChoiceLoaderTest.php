@@ -269,7 +269,7 @@ class LeadFieldChoiceLoaderTest extends TestCase
         self::assertSame([1 => $leadField2, 10 => $leadField1], $leadFieldChoiceLoader->loadFieldsForChoices($choices));
     }
 
-    public function fieldTypeProvider(): \Generator
+    public static function fieldTypeProvider(): \Generator
     {
         yield 'all' => [null];
         yield 'multi' => [true];

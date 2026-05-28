@@ -1,37 +1,12 @@
-name: Continuous Integration
+name: CI Workflow
 on:
-  push:
-    branches:
-      - main
-      - '[0-9]+\-[0-9]+\-x'
   pull_request:
-
 jobs:
-  integration:
-    name: Integration tests
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: [8.1]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup PHP Environment
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-      - name: Install composer requirements.
-        run: composer install
-      - name: Check PHP CS
-        run: ./vendor/bin/php-cs-fixer fix --config .php-cs-fixer.php --dry-run --using-cache no --show-progress dots -v
-      - name: Run PHPUnit
-        run: ./vendor/bin/phpunit --testsuite unit --coverage-cobertura=coverage.xml
-      - name: Code Coverage
-        uses: irongut/CodeCoverageSummary@v1.3.0
-        with:
-          filename: coverage.xml
-          badge: true
-          format: 'markdown'
-          output: 'both'
-      - name: Write to Job Summary
-        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+  ci-workflow:
+    name: CI
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/complete-ci.yaml@main
+    with:
+      mauticVersion: 7
+    secrets:
+      PERSONAL_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

@@ -8,11 +8,11 @@ use Mautic\IntegrationsBundle\Integration\BasicIntegration;
 use Mautic\IntegrationsBundle\Integration\ConfigurationTrait;
 use Mautic\IntegrationsBundle\Integration\Interfaces\BasicInterface;
 
-class LeuchtfeuerMultiselectIntegration extends BasicIntegration implements BasicInterface
+class LeuchtfeuerMultiselectHandlingIntegration extends BasicIntegration implements BasicInterface
 {
     use ConfigurationTrait;
 
-    public const INTEGRATION_NAME = 'LeuchtfeuerMultiselect';
+    public const INTEGRATION_NAME = 'Leuchtfeuermultiselecthandling';
     public const DISPLAY_NAME     = 'Multiselect Handling';
 
     public function getName(): string

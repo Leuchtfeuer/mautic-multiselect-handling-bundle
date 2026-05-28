@@ -234,7 +234,7 @@ class FormActionTest extends TestCase
     /**
      * @return array<array<mixed>>
      */
-    public function invalidActionProperties(): array
+    public static function invalidActionProperties(): array
     {
         return [
             [[]],
@@ -312,7 +312,7 @@ class FormActionTest extends TestCase
     /**
      * @return array<array<bool>>
      */
-    public function trueFalse(): array
+    public static function trueFalse(): array
     {
         return [
             [true],
@@ -456,7 +456,7 @@ class FormActionTest extends TestCase
     /**
      * @return array<array<mixed>>
      */
-    public function invalidSegmentData(): array
+    public static function invalidSegmentData(): array
     {
         return [
             [['not array']],

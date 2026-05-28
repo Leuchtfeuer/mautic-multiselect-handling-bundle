@@ -403,7 +403,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         ], $leadFieldChoiceLoader->loadValuesForChoices($choices));
     }
 
-    public function fieldTypeProvider(): \Generator
+    public static function fieldTypeProvider(): \Generator
     {
         yield 'all' => [null];
         yield 'multi' => [true];
