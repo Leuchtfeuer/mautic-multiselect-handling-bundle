@@ -48,9 +48,9 @@ class CampaignSubscriber implements EventSubscriberInterface
         $event->addAction(ActionSubscriber::MANAGE_SELECT_FIELD_ACTION, $action);
 
         $action = [
-            'label'       => 'plugin.multiselect_handling.segment_action.label',
-            'description' => 'plugin.multiselect_handling.segment_action.description',
-            'formType'    => SettingsType::class,
+            'label'            => 'plugin.multiselect_handling.segment_action.label',
+            'description'      => 'plugin.multiselect_handling.segment_action.description',
+            'formType'         => SettingsType::class,
             'batchEventName'   => ActionSubscriber::MANAGE_SEGMENTS_EVENT,
         ];
 

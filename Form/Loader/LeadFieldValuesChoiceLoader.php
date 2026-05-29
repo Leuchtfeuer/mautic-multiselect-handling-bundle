@@ -30,8 +30,6 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     }
 
     /**
-     * @param callable|null $value
-     *
      * @return ChoiceListInterface<string, int>
      */
     public function loadChoiceList(?callable $value = null): ChoiceListInterface

@@ -49,7 +49,7 @@ class ActionSubscriberTest extends TestCase
         $pendingEvent->expects(self::never())->method('fail');
         $pendingEvent->expects(self::never())->method('failAll');
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel     = $this->createMock(LeadModel::class);
         $segmentsModel = $this->createMock(SegmentsModel::class);
 
         $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
@@ -72,7 +72,7 @@ class ActionSubscriberTest extends TestCase
             ->method('failAll')
             ->with('Invalid event configuration.');
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel     = $this->createMock(LeadModel::class);
         $segmentsModel = $this->createMock(SegmentsModel::class);
 
         $subscriber = new ActionSubscriber($config, $leadModel, $segmentsModel);
@@ -116,7 +116,7 @@ class ActionSubscriberTest extends TestCase
         $pendingEvent->expects(self::never())->method('fail');
         $pendingEvent->expects(self::never())->method('failAll');
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel     = $this->createMock(LeadModel::class);
         $segmentsModel = $this->createMock(SegmentsModel::class);
         $segmentsModel->expects(self::never())->method('getSegments');
 
@@ -145,7 +145,7 @@ class ActionSubscriberTest extends TestCase
             ->method('failAll')
             ->with('Invalid event configuration.');
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel     = $this->createMock(LeadModel::class);
         $segmentsModel = $this->createMock(SegmentsModel::class);
         $segmentsModel->expects(self::never())->method('getSegments');
 
@@ -189,7 +189,7 @@ class ActionSubscriberTest extends TestCase
             ->method('failAll')
             ->with('Invalid setup.');
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel     = $this->createMock(LeadModel::class);
         $segmentsModel = $this->createMock(SegmentsModel::class);
         $segmentsModel->expects(self::once())
             ->method('getSegments')
@@ -219,7 +219,7 @@ class ActionSubscriberTest extends TestCase
             ->method('failAll')
             ->with('Plugin not published');
 
-        $leadModel = $this->createMock(LeadModel::class);
+        $leadModel     = $this->createMock(LeadModel::class);
         $segmentsModel = $this->createMock(SegmentsModel::class);
         $segmentsModel->expects(self::never())->method('getSegments');
 

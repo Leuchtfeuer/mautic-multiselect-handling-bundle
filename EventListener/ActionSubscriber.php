@@ -8,7 +8,6 @@ use Mautic\CampaignBundle\Event\PendingEvent;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\UnexpectedTypeException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
@@ -42,11 +41,12 @@ class ActionSubscriber implements EventSubscriberInterface
     {
         if (!$this->config->isPublished()) {
             $pendingEvent->failAll('Plugin not published');
+
             return;
         }
 
         $eventType = $pendingEvent->getEvent()->getType();
-        if ($eventType !== self::MANAGE_MULTISELECT_FIELD_ACTION && $eventType !== self::MANAGE_SELECT_FIELD_ACTION) {
+        if (self::MANAGE_MULTISELECT_FIELD_ACTION !== $eventType && self::MANAGE_SELECT_FIELD_ACTION !== $eventType) {
             return;
         }
 
@@ -54,6 +54,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
         if (!isset($config[UpdateMultiSelectFieldType::FIELD])) {
             $pendingEvent->failAll('Invalid event configuration.');
+
             return;
         }
 
@@ -76,6 +77,7 @@ class ActionSubscriber implements EventSubscriberInterface
 
                 if (!is_array($config[$key]) && !is_string($config[$key])) {
                     $pendingEvent->failAll('Field values has an incompatible type.');
+
                     return;
                 }
             }
@@ -130,11 +132,12 @@ class ActionSubscriber implements EventSubscriberInterface
     {
         if (!$this->config->isPublished()) {
             $pendingEvent->failAll('Plugin not published');
+
             return;
         }
 
         $eventType = $pendingEvent->getEvent()->getType();
-        if ($eventType !== self::MANAGE_SEGMENTS_ACTION) {
+        if (self::MANAGE_SEGMENTS_ACTION !== $eventType) {
             return;
         }
 
@@ -142,15 +145,17 @@ class ActionSubscriber implements EventSubscriberInterface
 
         if (!isset($config[SettingsType::FIELD]) || !array_key_exists(SettingsType::CHECKBOX, $config)) {
             $pendingEvent->failAll('Invalid event configuration.');
+
             return;
         }
 
-        $fieldId = (int) $config[SettingsType::FIELD];
+        $fieldId       = (int) $config[SettingsType::FIELD];
         $createMissing = (bool) $config[SettingsType::CHECKBOX];
 
         $availableSegments = $this->segmentsModel->getSegments($fieldId, $createMissing);
         if (empty($availableSegments)) {
             $pendingEvent->failAll('Invalid setup.');
+
             return;
         }
 
