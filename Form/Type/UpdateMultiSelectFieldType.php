@@ -25,14 +25,20 @@ class UpdateMultiSelectFieldType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        if (!is_bool($options['multiple'])) {
+            throw new \InvalidArgumentException('Option "multiple" must be a boolean.');
+        }
+
         $this->leadFieldChoiceLoader->setType($options['multiple']);
         $this->leadFieldValuesChoiceLoader->setType($options['multiple']);
         $fieldList = $this->leadFieldChoiceLoader->loadChoiceList()->getOriginalKeys();
         if (null == $options['data'] && !empty($fieldList)) {
             $flipFieldList = array_flip($fieldList);
             $firstField    = reset($flipFieldList);
-            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $firstField);
-        } elseif (!empty($options['data']) && isset($options['data'][self::FIELD]) && $options['data'][self::FIELD] > 0) {
+            if (is_numeric($firstField)) {
+                $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $firstField);
+            }
+        } elseif (is_array($options['data']) && isset($options['data'][self::FIELD]) && is_numeric($options['data'][self::FIELD]) && $options['data'][self::FIELD] > 0) {
             $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $options['data'][self::FIELD]);
         }
         $builder->add(self::FIELD, ChoiceType::class, [

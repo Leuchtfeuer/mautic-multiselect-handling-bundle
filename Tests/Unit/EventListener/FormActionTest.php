@@ -170,9 +170,8 @@ class FormActionTest extends TestCase
 
     /**
      * @param array<string, string> $properties
-     *
-     * @dataProvider invalidActionProperties
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidActionProperties')]
     public function testOnActionNotAllProperties(array $properties): void
     {
         $leadFieldChoiceLoader     = $this->createMock(LeadFieldChoiceLoader::class);
@@ -243,9 +242,7 @@ class FormActionTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider trueFalse
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('trueFalse')]
     public function testOnActionInvalidChoices(bool $zeroOrTwo): void
     {
         $leadFieldChoiceLoader     = $this->createMock(LeadFieldChoiceLoader::class);

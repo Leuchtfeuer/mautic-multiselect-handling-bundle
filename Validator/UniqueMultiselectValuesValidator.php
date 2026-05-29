@@ -31,7 +31,7 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             $properties = $value;
         }
 
-        if (!isset($properties[UpdateMultiSelectFieldType::FIELD])) {
+        if (!is_array($properties) || !isset($properties[UpdateMultiSelectFieldType::FIELD])) {
             throw new UnexpectedTypeException(null, 'string');
         }
 
@@ -71,9 +71,14 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
             return;
         }
 
+        if (!is_numeric($properties[UpdateMultiSelectFieldType::FIELD])) {
+            $this->context->buildViolation($constraint->messageInvalidField)
+                ->addViolation();
+
+            return;
+        }
+
         foreach ([UpdateMultiSelectFieldType::ADD, UpdateMultiSelectFieldType::REMOVE] as $fieldName) {
-            // check if the value (multi is in array) and is in the same field and add the validation message otherwise
-            // stop adding messages if an error found, otherwise add the violation of wrong field value type
             if ($this->checkValuesFromSameField($fields[$fieldName], (int) $properties[UpdateMultiSelectFieldType::FIELD], $constraint->messageNotSameField)) {
                 continue;
             }
@@ -109,9 +114,13 @@ class UniqueMultiselectValuesValidator extends ConstraintValidator
         }
 
         foreach ($fieldValues as $item) {
+            if (!is_string($item)) {
+                continue;
+            }
+
             $id = SegmentsModel::splitAliasId($item)['id'];
 
-            if ($fieldId !== (int) $id) {
+            if ($fieldId !== $id) {
                 $this->context->buildViolation($message)
                     ->addViolation();
 

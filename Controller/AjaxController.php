@@ -36,7 +36,11 @@ class AjaxController extends CommonAjaxController
 
     public function getMultiselectOptionsAction(Request $request): \Symfony\Component\HttpFoundation\JsonResponse
     {
-        $id          = $request->get('id');
+        $id = $request->get('id');
+        if (!is_numeric($id) && !is_string($id) && !is_array($id) && null !== $id) {
+            return $this->sendJsonResponse(['success' => 0, 'message' => 'Invalid ID parameter']);
+        }
+
         $fieldEntity = $this->fieldModel->getEntity($id);
         if (!$fieldEntity) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field entity not found']);
@@ -55,8 +59,20 @@ class AjaxController extends CommonAjaxController
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field properties list is not an array']);
         }
         foreach ($list as $key => $value) {
-            $list[$key]['label'] = '('.$fieldEntity->getName().') '.$value['label'];
-            $list[$key]['value'] = $fieldEntity->getId().'-'.$value['value'];
+            if (!is_array($value) || !isset($value['label'], $value['value'])) {
+                continue;
+            }
+            if (!is_string($value['label']) || (!is_string($value['value']) && !is_int($value['value']))) {
+                continue;
+            }
+            \assert(is_array($list[$key]));
+            \assert(array_key_exists('label', $list[$key]));
+            \assert(array_key_exists('value', $list[$key]));
+            /** @var array{label: string, value: string|int} $item */
+            $item          = $list[$key];
+            $item['label'] = '('.$fieldEntity->getName().') '.$value['label'];
+            $item['value'] = $fieldEntity->getId().'-'.$value['value'];
+            $list[$key]    = $item;
         }
 
         return $this->sendJsonResponse(['success' => 1, 'data' => $list]);

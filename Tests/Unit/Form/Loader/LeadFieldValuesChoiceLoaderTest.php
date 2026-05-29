@@ -11,9 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class LeadFieldValuesChoiceLoaderTest extends TestCase
 {
-    /**
-     * @dataProvider fieldTypeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('fieldTypeProvider')]
     public function testLoadChoiceListCached(?bool $isMultiSelect): void
     {
         $fieldId  = 11;
@@ -303,9 +301,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         self::assertSame([], $leadFieldChoiceLoader->loadValuesForChoices([]));
     }
 
-    /**
-     * @dataProvider fieldTypeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('fieldTypeProvider')]
     public function testLoadValuesForChoicesOrdersChoices(?bool $isMultiSelect): void
     {
         $fieldId  = 11;

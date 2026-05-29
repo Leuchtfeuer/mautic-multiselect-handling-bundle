@@ -157,6 +157,10 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
         self::assertStringNotContainsString($removedValues[1], $field['value'], 'Field value should not contain the second removed value');
     }
 
+    /**
+     * @param array<string> $multiSelectAdd
+     * @param array<string> $multiSelectRemove
+     */
     private function createForm(int $fieldId, array $multiSelectAdd = [], array $multiSelectRemove = []): Form
     {
         $properties = [
@@ -244,7 +248,7 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
     }
 
     /**
-     * @return array<int>
+     * @return array<Lead>
      */
     private function createContacts(): array
     {
@@ -266,7 +270,9 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
 
         $contacts = [];
         foreach ($response['contacts'] as $contact) {
-            $contacts[] = $this->em->getRepository(Lead::class)->find($contact['id']);
+            $lead = $this->em->getRepository(Lead::class)->find($contact['id']);
+            assert($lead instanceof Lead);
+            $contacts[] = $lead;
         }
 
         return $contacts;

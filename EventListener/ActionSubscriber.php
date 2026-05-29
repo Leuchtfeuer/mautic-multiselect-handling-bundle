@@ -83,29 +83,43 @@ class ActionSubscriber implements EventSubscriberInterface
             }
         }
 
+        if (!is_numeric($config[UpdateMultiSelectFieldType::FIELD])) {
+            $pendingEvent->failAll('Invalid field ID');
+
+            return;
+        }
+
         $fieldId = (int) $config[UpdateMultiSelectFieldType::FIELD];
 
-        // Batch processing: Loop through all logs
         foreach ($pendingEvent->getPending() as $log) {
             $contact = $log->getLead();
+            if (null === $contact) {
+                $pendingEvent->pass($log);
+                continue;
+            }
+
             try {
                 if (null === $field = $this->getCurrentField($contact, $fieldId)) {
-                    $pendingEvent->pass($log); // Skip, field not in contact
+                    $pendingEvent->pass($log);
                     continue;
                 }
 
                 $currentValue = $this->getFieldValue($field, false);
 
-                // Add values
                 foreach ($fields[UpdateMultiSelectFieldType::ADD] as $idAliasToAdd) {
+                    if (!is_string($idAliasToAdd)) {
+                        continue;
+                    }
                     $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
                     if (!in_array($aliasToAdd, $currentValue, true)) {
                         $currentValue[] = $aliasToAdd;
                     }
                 }
 
-                // Remove values
                 foreach ($fields[UpdateMultiSelectFieldType::REMOVE] as $idAliasToRemove) {
+                    if (!is_string($idAliasToRemove)) {
+                        continue;
+                    }
                     $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
                     if (false !== $index = array_search($aliasToRemove, $currentValue, true)) {
                         unset($currentValue[$index]);
@@ -149,6 +163,12 @@ class ActionSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (!is_numeric($config[SettingsType::FIELD])) {
+            $pendingEvent->failAll('Invalid field ID');
+
+            return;
+        }
+
         $fieldId       = (int) $config[SettingsType::FIELD];
         $createMissing = (bool) $config[SettingsType::CHECKBOX];
 
@@ -159,12 +179,16 @@ class ActionSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // Batch processing: Loop through all logs
         foreach ($pendingEvent->getPending() as $log) {
             $contact = $log->getLead();
+            if (null === $contact) {
+                $pendingEvent->pass($log);
+                continue;
+            }
+
             try {
                 if (null === $field = $this->getCurrentField($contact, $fieldId)) {
-                    $pendingEvent->pass($log); // Skip, field not in contact
+                    $pendingEvent->pass($log);
                     continue;
                 }
 
@@ -251,9 +275,7 @@ class ActionSubscriber implements EventSubscriberInterface
             return $currentValue;
         }
 
-        return array_map(function (string $segmentAlias): string {
-            return $this->leadModel->cleanAlias($segmentAlias, '', 0, '-');
-        }, $currentValue);
+        return array_map(fn (string $segmentAlias): string => $this->leadModel->cleanAlias($segmentAlias, '', 0, '-'), $currentValue);
     }
 
     /**

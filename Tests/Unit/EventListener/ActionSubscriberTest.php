@@ -14,12 +14,15 @@ use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Config;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Model\SegmentsModel;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class ActionSubscriberTest extends TestCase
 {
     /**
      * @param array<string,mixed> $properties
+     *
+     * @return PendingEvent&MockObject
      */
     private function createPendingEventMock(string $eventType, array $properties): PendingEvent
     {
@@ -125,10 +128,9 @@ class ActionSubscriberTest extends TestCase
     }
 
     /**
-     * @dataProvider missingFieldProvider
-     *
      * @param array<string,mixed> $fields
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('missingFieldProvider')]
     public function testManageSegmentsActionFailsWithMissingFieldConfig(array $fields): void
     {
         $config = $this->createMock(Config::class);

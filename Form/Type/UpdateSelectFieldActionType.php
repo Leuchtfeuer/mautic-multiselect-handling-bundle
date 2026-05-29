@@ -28,8 +28,10 @@ class UpdateSelectFieldActionType extends AbstractType
         if (null == $options['data'] && !empty($fieldList)) {
             $flipFieldList = array_flip($fieldList);
             $firstField    = reset($flipFieldList);
-            $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $firstField);
-        } elseif (!empty($options['data']) && isset($options['data'][self::FIELD_MANAGED_FIELD]) && $options['data'][self::FIELD_MANAGED_FIELD] > 0) {
+            if (is_numeric($firstField)) {
+                $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $firstField);
+            }
+        } elseif (is_array($options['data']) && isset($options['data'][self::FIELD_MANAGED_FIELD]) && is_numeric($options['data'][self::FIELD_MANAGED_FIELD]) && $options['data'][self::FIELD_MANAGED_FIELD] > 0) {
             $this->leadFieldValuesChoiceLoader->setDefaultFieldId((int) $options['data'][self::FIELD_MANAGED_FIELD]);
         }
         $builder->add(self::FIELD_MANAGED_FIELD, ChoiceType::class, [
