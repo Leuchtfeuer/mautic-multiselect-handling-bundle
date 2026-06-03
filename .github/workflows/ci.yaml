@@ -4,7 +4,7 @@ on:
 jobs:
   ci-workflow:
     name: CI
-    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/complete-ci.yaml@main
+    uses: Leuchtfeuer/mautic-ci-runner/.github/workflows/complete-ci.yaml@mtc-10784-fix-cr
     with:
       mauticVersion: 7
     secrets:
