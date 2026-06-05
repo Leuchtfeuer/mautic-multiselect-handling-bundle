@@ -1,4 +1,6 @@
-## Multiselect Handling by Leuchtfeuer
+# Plugin: Multiselect Handling by Leuchtfeuer
+
+## Overview / Purpose / Features
 Enhanced Mautics ability to handle the fieldtypes “Select” & “Multiselect”. Handling of fieldtype "Select" was introduced in later version, thus the naming "multiselect".
 
 

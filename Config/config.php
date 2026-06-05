@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'name'        => 'Multiselect Handling by Leuchtfeuer',
-    'description' => 'Provides custom actions to manage multiselect fields.',
+    'description' => 'Provides custom campaign and form actions to manage multiselect fields.',
     'version'     => '5.0.1',
     'author'      => 'Leuchtfeuer Digital Marketing GmbH',
     'services'    => [
