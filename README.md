@@ -73,7 +73,6 @@ Feel free to open issues or submit pull requests on [GitHub](#). Follow the cont
 @lenonleite
 @LeonOltmanns
 @PatrickJenkner
-@JonasLudwig1998
 ## Author
 Leuchtfeuer Digital Marketing GmbH
 Please raise any issues in GitHub.
