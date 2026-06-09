@@ -12,10 +12,9 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
-use Mautic\PluginBundle\Entity\Integration;
-use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\PluginActivationTrait;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 {
+    use PluginActivationTrait;
     protected bool $authenticateApi = true;
 
     private LeadModel $leadModel;
@@ -130,23 +130,6 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         if (isset($this->segments[1]['alias'])) {
             unset($this->segments[1]['alias']);
         }
-    }
-
-    private function activatePlugin(bool $isPublished=true): void
-    {
-        $this->client->request('GET', '/s/plugins/reload');
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
-
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'Leuchtfeuermultiselecthandling']);
-        if (empty($integration)) {
-            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
-            $integration = new Integration();
-            $integration->setName('Leuchtfeuermultiselecthandling');
-            $integration->setPlugin($plugin);
-        }
-        $integration->setIsPublished($isPublished);
-        $this->em->persist($integration);
-        $this->em->flush();
     }
 
     public function testFunctionalMultiselectWithoutCreatingMissing(): void

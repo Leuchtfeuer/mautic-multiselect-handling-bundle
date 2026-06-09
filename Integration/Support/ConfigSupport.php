@@ -6,9 +6,9 @@ namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\Support;
 
 use Mautic\IntegrationsBundle\Integration\DefaultConfigFormTrait;
 use Mautic\IntegrationsBundle\Integration\Interfaces\ConfigFormInterface;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\LeuchtfeuerMultiselectHandlingIntegration;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\LeuchtfeuerMultiselectIntegration;
 
-class ConfigSupport extends LeuchtfeuerMultiselectHandlingIntegration implements ConfigFormInterface
+class ConfigSupport extends LeuchtfeuerMultiselectIntegration implements ConfigFormInterface
 {
     use DefaultConfigFormTrait;
 }

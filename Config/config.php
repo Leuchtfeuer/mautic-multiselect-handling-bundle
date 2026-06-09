@@ -15,8 +15,8 @@ return [
                     'mautic.integrations.helper',
                 ],
             ],
-            'mautic.integration.leuchtfeuermultiselecthandling' => [
-                'class' => MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\LeuchtfeuerMultiselectHandlingIntegration::class,
+            'mautic.integration.leuchtfeuermultiselect' => [
+                'class' => MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Integration\LeuchtfeuerMultiselectIntegration::class,
                 'tags'  => [
                     'mautic.integration',
                     'mautic.basic_integration',

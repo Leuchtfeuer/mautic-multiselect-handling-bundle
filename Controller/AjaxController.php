@@ -36,8 +36,8 @@ class AjaxController extends CommonAjaxController
 
     public function getMultiselectOptionsAction(Request $request): \Symfony\Component\HttpFoundation\JsonResponse
     {
-        $id = $request->get('id');
-        if (!is_numeric($id) && !is_string($id) && !is_array($id) && null !== $id) {
+        $id = $request->query->get('id');
+        if (!is_numeric($id) && !is_string($id) && null !== $id) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Invalid ID parameter']);
         }
 

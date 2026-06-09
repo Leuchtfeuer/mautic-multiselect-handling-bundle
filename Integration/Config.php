@@ -30,7 +30,7 @@ class Config
      */
     public function getIntegrationEntity(): Integration
     {
-        $integrationObject = $this->integrationsHelper->getIntegration(LeuchtfeuerMultiselectHandlingIntegration::INTEGRATION_NAME);
+        $integrationObject = $this->integrationsHelper->getIntegration(LeuchtfeuerMultiselectIntegration::INTEGRATION_NAME);
 
         return $integrationObject->getIntegrationConfiguration();
     }
