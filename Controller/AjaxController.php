@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Controller;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Mautic\CoreBundle\Controller\AjaxController as CommonAjaxController;
-use Mautic\CoreBundle\Factory\MauticFactory;
 use Mautic\CoreBundle\Factory\ModelFactory;
 use Mautic\CoreBundle\Helper\CoreParametersHelper;
 use Mautic\CoreBundle\Helper\UserHelper;
@@ -20,7 +21,6 @@ class AjaxController extends CommonAjaxController
 {
     public function __construct(
         ManagerRegistry $doctrine,
-        MauticFactory $factory,
         ModelFactory $modelFactory,
         UserHelper $userHelper,
         CoreParametersHelper $coreParametersHelper,
@@ -31,12 +31,16 @@ class AjaxController extends CommonAjaxController
         CorePermissions $security,
         private FieldModel $fieldModel,
     ) {
-        parent::__construct($doctrine, $factory, $modelFactory, $userHelper, $coreParametersHelper, $dispatcher, $translator, $flashBag, $requestStack, $security);
+        parent::__construct($doctrine, $modelFactory, $userHelper, $coreParametersHelper, $dispatcher, $translator, $flashBag, $requestStack, $security);
     }
 
     public function getMultiselectOptionsAction(Request $request): \Symfony\Component\HttpFoundation\JsonResponse
     {
-        $id          = $request->get('id');
+        $id = $request->query->get('id');
+        if (!is_numeric($id) && !is_string($id) && null !== $id) {
+            return $this->sendJsonResponse(['success' => 0, 'message' => 'Invalid ID parameter']);
+        }
+
         $fieldEntity = $this->fieldModel->getEntity($id);
         if (!$fieldEntity) {
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field entity not found']);
@@ -55,8 +59,20 @@ class AjaxController extends CommonAjaxController
             return $this->sendJsonResponse(['success' => 0, 'message' => 'Field properties list is not an array']);
         }
         foreach ($list as $key => $value) {
-            $list[$key]['label'] = '('.$fieldEntity->getName().') '.$value['label'];
-            $list[$key]['value'] = $fieldEntity->getId().'-'.$value['value'];
+            if (!is_array($value) || !isset($value['label'], $value['value'])) {
+                continue;
+            }
+            if (!is_string($value['label']) || (!is_string($value['value']) && !is_int($value['value']))) {
+                continue;
+            }
+            \assert(is_array($list[$key]));
+            \assert(array_key_exists('label', $list[$key]));
+            \assert(array_key_exists('value', $list[$key]));
+            /** @var array{label: string, value: string|int} $item */
+            $item          = $list[$key];
+            $item['label'] = '('.$fieldEntity->getName().') '.$value['label'];
+            $item['value'] = $fieldEntity->getId().'-'.$value['value'];
+            $list[$key]    = $item;
         }
 
         return $this->sendJsonResponse(['success' => 1, 'data' => $list]);

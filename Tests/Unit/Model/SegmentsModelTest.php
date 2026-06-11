@@ -18,9 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class SegmentsModelTest extends TestCase
 {
-    /**
-     * @dataProvider trueFalse
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('trueFalse')]
     public function testInvalidChoices(bool $zeroOrTwo): void
     {
         $fieldId               = 123;
@@ -48,9 +46,8 @@ class SegmentsModelTest extends TestCase
 
     /**
      * @param array<mixed> $properties
-     *
-     * @dataProvider invalidProperties
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidProperties')]
     public function testInvalidChoiceProperties(array $properties): void
     {
         $fieldId               = 123;
@@ -83,9 +80,8 @@ class SegmentsModelTest extends TestCase
 
     /**
      * @param array<mixed> $segmentsData
-     *
-     * @dataProvider invalidSegmentData
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidSegmentData')]
     public function testInvalidSegmentsReturnsEmptyArray(array $segmentsData): void
     {
         $fieldId               = 123;
@@ -192,25 +188,25 @@ class SegmentsModelTest extends TestCase
         $listModel->expects($invokedCount)
             ->method('getUserLists')
             ->willReturnCallback(function (string $alias) use ($removeSegmentAlias, $existingSegmentAlias, $createSegmentAliasClean, $segmentsData, $segmentAlias, $listModel, $invokedCount) {
-                if (1 === $invokedCount->getInvocationCount()) {
+                if (1 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($listModel->cleanAlias($segmentAlias, '', 0, '-'), $alias);
 
                     return $segmentsData[0];
                 }
 
-                if (2 === $invokedCount->getInvocationCount()) {
+                if (2 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($createSegmentAliasClean, $alias);
 
                     return $segmentsData[1];
                 }
 
-                if (3 === $invokedCount->getInvocationCount()) {
+                if (3 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($listModel->cleanAlias($existingSegmentAlias, '', 0, '-'), $alias);
 
                     return $segmentsData[2];
                 }
 
-                if (4 === $invokedCount->getInvocationCount()) {
+                if (4 === $invokedCount->numberOfInvocations()) {
                     self::assertSame($listModel->cleanAlias($removeSegmentAlias, '', 0, '-'), $alias);
 
                     return $segmentsData[3];
@@ -224,7 +220,6 @@ class SegmentsModelTest extends TestCase
                 self::assertSame($createSegmentAliasClean, $leadList->getAlias());
                 self::assertSame($createSegmentName, $leadList->getName());
                 $reflection = new \ReflectionProperty(LeadList::class, 'id');
-                $reflection->setAccessible(true);
                 $reflection->setValue($leadList, $createdSegmentId);
             });
 
@@ -240,7 +235,7 @@ class SegmentsModelTest extends TestCase
     /**
      * @return array<array<bool>>
      */
-    public function trueFalse(): array
+    public static function trueFalse(): array
     {
         return [
             [true],
@@ -251,7 +246,7 @@ class SegmentsModelTest extends TestCase
     /**
      * @return array<array<mixed>>
      */
-    public function invalidProperties(): array
+    public static function invalidProperties(): array
     {
         return [
             [[]],
@@ -263,7 +258,7 @@ class SegmentsModelTest extends TestCase
     /**
      * @return array<array<mixed>>
      */
-    public function invalidSegmentData(): array
+    public static function invalidSegmentData(): array
     {
         return [
             [['not array']],

@@ -33,12 +33,21 @@ class SegmentsModel
 
         $segmentsSettings = [];
         foreach ($properties['list'] as $property) {
+            if (!is_array($property) || !isset($property['value'], $property['label'])) {
+                continue;
+            }
+            if (!is_string($property['value']) && !is_int($property['value'])) {
+                continue;
+            }
+            if (!is_string($property['label'])) {
+                continue;
+            }
             $segmentsSettings[$property['value']] = $property['label'];
         }
 
         $segments = [];
         foreach ($segmentsSettings as $segmentAlias => $segmentName) {
-            $segmentAlias = $this->listModel->cleanAlias($segmentAlias, '', 0, '-');
+            $segmentAlias = $this->listModel->cleanAlias((string) $segmentAlias, '', 0, '-');
             $segmentsData = $this->listModel->getUserLists($segmentAlias);
 
             if (1 !== count($segmentsData)) {
@@ -55,6 +64,10 @@ class SegmentsModel
 
             $segmentData = array_pop($segmentsData);
             if (!is_array($segmentData) || !isset($segmentData['id'], $segmentData['alias'])) {
+                continue;
+            }
+
+            if (!is_numeric($segmentData['id']) || !is_string($segmentData['alias'])) {
                 continue;
             }
 

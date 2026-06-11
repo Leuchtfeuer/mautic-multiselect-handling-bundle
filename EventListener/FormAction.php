@@ -10,7 +10,6 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\InvalidSetupException;
-use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Exception\UnexpectedTypeException;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Loader\LeadFieldChoiceLoader;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
@@ -59,7 +58,13 @@ class FormAction implements EventSubscriberInterface
             throw new ValidationException('Seems like you do not have proper SettingsType.');
         }
 
-        $choices = $this->choiceLoader->loadFieldsForChoices([$actionProperties[SettingsType::FIELD]]);
+        if (!is_numeric($actionProperties[SettingsType::FIELD])) {
+            throw new ValidationException('Invalid field ID type.');
+        }
+
+        $fieldId = (int) $actionProperties[SettingsType::FIELD];
+
+        $choices = $this->choiceLoader->loadFieldsForChoices([$fieldId]);
 
         if (1 !== count($choices)) {
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
@@ -81,14 +86,10 @@ class FormAction implements EventSubscriberInterface
             $selectedSegments = [];
         }
 
-        $selectedSegments = array_map(function (string $segmentAlias): string {
-            return $this->leadModel->cleanAlias($segmentAlias, '', 0, '-');
-        }, $selectedSegments);
+        $selectedSegments = array_map(fn (string $segmentAlias): string => $this->leadModel->cleanAlias($segmentAlias, '', 0, '-'), $selectedSegments);
 
         try {
-            if (null === $segmentsData = $this->segmentsModel->getSegments($actionProperties[SettingsType::FIELD], (bool) $actionProperties[SettingsType::CHECKBOX])) {
-                throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
-            }
+            $segmentsData = $this->segmentsModel->getSegments($fieldId, (bool) $actionProperties[SettingsType::CHECKBOX]);
         } catch (InvalidSetupException) {
             throw new ValidationException($this->translator->trans(self::INVALID_SETUP));
         }
@@ -142,10 +143,14 @@ class FormAction implements EventSubscriberInterface
 
         $lead = $event->getLead();
         if (null === $lead || !$lead instanceof Lead) {
-            return; // no lead to update
+            return;
         }
 
         $action = $event->getAction();
+        if (null === $action) {
+            return;
+        }
+
         $fields = [
             UpdateMultiSelectFieldType::ADD    => [],
             UpdateMultiSelectFieldType::REMOVE => [],
@@ -170,13 +175,20 @@ class FormAction implements EventSubscriberInterface
             }
         }
 
+        if (!isset($values[UpdateMultiSelectFieldType::FIELD]) || !is_numeric($values[UpdateMultiSelectFieldType::FIELD])) {
+            return;
+        }
+
         if (null === $field = $this->getCurrentField($lead, (int) $values[UpdateMultiSelectFieldType::FIELD])) {
-            return; // field is not in contact
+            return;
         }
 
         $currentValue = $this->getFieldValue($field);
 
         foreach ($fields[UpdateMultiSelectFieldType::ADD] as $idAliasToAdd) {
+            if (!is_string($idAliasToAdd)) {
+                continue;
+            }
             $aliasToAdd = SegmentsModel::splitAliasId($idAliasToAdd)['alias'];
             if (in_array($aliasToAdd, $currentValue, true)) {
                 continue;
@@ -186,6 +198,9 @@ class FormAction implements EventSubscriberInterface
         }
 
         foreach ($fields[UpdateMultiSelectFieldType::REMOVE] as $idAliasToRemove) {
+            if (!is_string($idAliasToRemove)) {
+                continue;
+            }
             $aliasToRemove = SegmentsModel::splitAliasId($idAliasToRemove)['alias'];
             if (false === $index = array_search($aliasToRemove, $currentValue, true)) {
                 continue;
@@ -215,14 +230,26 @@ class FormAction implements EventSubscriberInterface
 
         $lead = $event->getLead();
         if (!$lead instanceof Lead) {
-            return; // no lead to update
+            return;
         }
 
-        $action     = $event->getAction();
+        $action = $event->getAction();
+        if (null === $action) {
+            return;
+        }
+
         $properties = $action->getProperties();
 
+        if (!isset($properties[UpdateMultiSelectFieldType::FIELD]) || !is_numeric($properties[UpdateMultiSelectFieldType::FIELD])) {
+            return;
+        }
+
+        if (!isset($properties[UpdateSelectFieldActionType::FIELD_SELECT_VALUE]) || !is_string($properties[UpdateSelectFieldActionType::FIELD_SELECT_VALUE])) {
+            return;
+        }
+
         if (null === $field = $this->getCurrentField($lead, (int) $properties[UpdateMultiSelectFieldType::FIELD])) {
-            return; // field is not in contact
+            return;
         }
 
         $valueToSet = SegmentsModel::splitAliasId($properties[UpdateSelectFieldActionType::FIELD_SELECT_VALUE])['alias'];
@@ -237,11 +264,12 @@ class FormAction implements EventSubscriberInterface
      */
     private function getFieldValue(array $field): array
     {
-        $currentValue = explode('|', $field['value'] ?? '');
-
-        if (!is_array($currentValue)) {
-            throw new UnexpectedTypeException($currentValue, 'array');
+        $value = $field['value'] ?? '';
+        if (!is_string($value) && !is_int($value)) {
+            return [];
         }
+
+        $currentValue = explode('|', (string) $value);
 
         if ([''] === $currentValue) {
             return [];
@@ -256,21 +284,24 @@ class FormAction implements EventSubscriberInterface
     private function getCurrentField(Lead $lead, int $fieldId): ?array
     {
         $fields = $lead->getFields();
-        $field  = [];
+
+        if (!isset($fields['core']) || !is_array($fields['core'])) {
+            return null;
+        }
 
         foreach ($fields['core'] as $coreField) {
+            if (!is_array($coreField) || !isset($coreField['id'])) {
+                continue;
+            }
+
             if ((int) $coreField['id'] !== $fieldId) {
                 continue;
             }
 
-            $field = $coreField;
+            return $coreField;
         }
 
-        if ([] === $field) {
-            return null; // field is not in contact
-        }
-
-        return $field;
+        return null;
     }
 
     /**

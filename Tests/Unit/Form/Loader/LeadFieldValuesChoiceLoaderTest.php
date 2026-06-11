@@ -11,9 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class LeadFieldValuesChoiceLoaderTest extends TestCase
 {
-    /**
-     * @dataProvider fieldTypeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('fieldTypeProvider')]
     public function testLoadChoiceListCached(?bool $isMultiSelect): void
     {
         $fieldId  = 11;
@@ -66,25 +64,25 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
             $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
                 ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
-                    if (1 === $invokedCount->getInvocationCount()) {
+                    if (1 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (2 === $invokedCount->getInvocationCount()) {
+                    if (2 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
                     }
 
-                    if (3 === $invokedCount->getInvocationCount()) {
+                    if (3 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (4 === $invokedCount->getInvocationCount()) {
+                    if (4 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
@@ -303,9 +301,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         self::assertSame([], $leadFieldChoiceLoader->loadValuesForChoices([]));
     }
 
-    /**
-     * @dataProvider fieldTypeProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('fieldTypeProvider')]
     public function testLoadValuesForChoicesOrdersChoices(?bool $isMultiSelect): void
     {
         $fieldId  = 11;
@@ -364,13 +360,13 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
             $leadFieldRepository->expects($invokedCount)
                 ->method('getFieldsByType')
                 ->willReturnCallback(function (string $alias) use ($leadField2, $leadField1, $invokedCount): array {
-                    if (1 === $invokedCount->getInvocationCount()) {
+                    if (1 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('multiselect', $alias);
 
                         return [$leadField1];
                     }
 
-                    if (2 === $invokedCount->getInvocationCount()) {
+                    if (2 === $invokedCount->numberOfInvocations()) {
                         self::assertSame('select', $alias);
 
                         return [$leadField2];
@@ -403,7 +399,7 @@ class LeadFieldValuesChoiceLoaderTest extends TestCase
         ], $leadFieldChoiceLoader->loadValuesForChoices($choices));
     }
 
-    public function fieldTypeProvider(): \Generator
+    public static function fieldTypeProvider(): \Generator
     {
         yield 'all' => [null];
         yield 'multi' => [true];

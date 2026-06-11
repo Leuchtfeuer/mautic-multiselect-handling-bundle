@@ -10,10 +10,9 @@ use Mautic\CampaignBundle\Entity\Lead as CampaignLead;
 use Mautic\CoreBundle\Test\MauticMysqlTestCase;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadRepository;
-use Mautic\PluginBundle\Entity\Integration;
-use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\UpdateMultiSelectFieldType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\PluginActivationTrait;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
 {
+    use PluginActivationTrait;
+    protected bool $authenticateApi = true;
+
     private LeadRepository $contactRepository;
 
     private const FIELD_NAME_MULTISELECT = 'test_multiselect_field';
@@ -144,23 +146,6 @@ class CampaignChangeFieldValuesFunctionalTest extends MauticMysqlTestCase
             self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
             $this->fieldId = null;
         }
-    }
-
-    private function activatePlugin(bool $isPublished = true): void
-    {
-        $this->client->request('GET', '/s/plugins/reload');
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
-
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
-        if (empty($integration)) {
-            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
-            $integration = new Integration();
-            $integration->setName('LeuchtfeuerMultiselect');
-            $integration->setPlugin($plugin);
-        }
-        $integration->setIsPublished($isPublished);
-        $this->em->persist($integration);
-        $this->em->flush();
     }
 
     public function testApplyFieldChangesToMultiselect(): void

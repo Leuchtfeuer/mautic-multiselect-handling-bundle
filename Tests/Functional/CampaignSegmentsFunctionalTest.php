@@ -12,10 +12,9 @@ use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadList;
 use Mautic\LeadBundle\Entity\LeadListRepository;
 use Mautic\LeadBundle\Model\LeadModel;
-use Mautic\PluginBundle\Entity\Integration;
-use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\ActionSubscriber;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Form\Type\SettingsType;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\PluginActivationTrait;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +22,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 {
+    use PluginActivationTrait;
+    protected bool $authenticateApi = true;
+
     private LeadModel $leadModel;
 
     private const FIELD_NAME = 'test_field';
@@ -30,7 +32,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     protected $useCleanupRollback = false;
 
     /**
-     * @var array<int, array<string, string>>
+     * @var array<int, array<string, mixed>>
      */
     private array $contacts = [
         [
@@ -67,7 +69,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     ];
 
     /**
-     * @var array<int, array<int, mixed>>|null
+     * @var array<int, array<string, mixed>>|null
      */
     private ?array $createdSegments = null;
 
@@ -80,7 +82,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->leadModel = self::$container->get(LeadModel::class);
+        $this->leadModel = $this->getContainer()->get(LeadModel::class);
         $this->activatePlugin(true);
     }
 
@@ -99,6 +101,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
 
         if (null !== $this->createdSegments) {
             foreach ($this->createdSegments as $segment) {
+                assert(isset($segment['id']));
                 $this->client->request(Request::METHOD_DELETE, '/api/segments/'.$segment['id'].'/delete');
                 $clientResponse = $this->client->getResponse();
                 self::assertSame(Response::HTTP_OK, $clientResponse->getStatusCode(), $clientResponse->getContent());
@@ -129,29 +132,13 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         }
     }
 
-    private function activatePlugin(bool $isPublished=true): void
-    {
-        $this->client->request('GET', '/s/plugins/reload');
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
-
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
-        if (empty($integration)) {
-            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
-            $integration = new Integration();
-            $integration->setName('LeuchtfeuerMultiselect');
-            $integration->setPlugin($plugin);
-        }
-        $integration->setIsPublished($isPublished);
-        $this->em->persist($integration);
-        $this->em->flush();
-    }
-
     public function testFunctionalMultiselectWithoutCreatingMissing(): void
     {
         $selectedSegments = $segments = $this->createdSegments = $this->createSegments();
         unset($selectedSegments[4]);
         $fieldId = $this->fieldId = $this->testCreateSelectField($selectedSegments, true);
 
+        assert(isset($selectedSegments[0]['alias'], $selectedSegments[1]['alias']));
         $this->contacts[0][self::FIELD_NAME] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias']];
         $contactId                           = $this->contactId = $this->createContact();
         $campaign                            = $this->createCampaign($contactId, $fieldId, false);
@@ -194,6 +181,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         unset($selectedSegments[4]);
         $fieldId = $this->fieldId = $this->testCreateSelectField($selectedSegments, false);
 
+        assert(isset($selectedSegments[1]['alias']));
         $this->contacts[0][self::FIELD_NAME] = $selectedSegments[1]['alias'];
         $contactId                           = $this->contactId = $this->createContact();
         $campaign                            = $this->createCampaign($contactId, $fieldId, false);
@@ -236,6 +224,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         $createdSegmentAlias = 'createdsegmentname';
         $fieldId             = $this->fieldId = $this->testCreateSelectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]), true);
 
+        assert(isset($selectedSegments[0]['alias'], $selectedSegments[1]['alias']));
         $this->contacts[0][self::FIELD_NAME] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias'], $createdSegmentAlias];
         $contactId                           = $this->contactId = $this->createContact();
         $campaign                            = $this->createCampaign($contactId, $fieldId, true);
@@ -327,6 +316,8 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         unset($selectedSegments[4]);
         $fieldId = $this->fieldId = $this->testCreateSelectField($selectedSegments, true, $aliasMap);
 
+        assert(isset($selectedSegments[0]['alias'], $selectedSegments[1]['alias']));
+        assert(isset($aliasMap[$selectedSegments[1]['alias']]));
         $this->contacts[0][self::FIELD_NAME] = [$selectedSegments[0]['alias'], $aliasMap[$selectedSegments[1]['alias']]];
         $contactId                           = $this->contactId = $this->createContact();
         $campaign                            = $this->createCampaign($contactId, $fieldId, false);
@@ -372,6 +363,8 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         unset($selectedSegments[4]);
         $fieldId = $this->fieldId = $this->testCreateSelectField($selectedSegments, false, $aliasMap);
 
+        assert(isset($selectedSegments[1]['alias']));
+        assert(isset($aliasMap[$selectedSegments[1]['alias']]));
         $this->contacts[0][self::FIELD_NAME] = $aliasMap[$selectedSegments[1]['alias']];
         $contactId                           = $this->contactId = $this->createContact();
         $campaign                            = $this->createCampaign($contactId, $fieldId, false);
@@ -414,6 +407,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         $createdSegmentAlias = 'created-segment_name';
         $fieldId             = $this->fieldId = $this->testCreateSelectField(array_merge($selectedSegments, [['name' => $createdSegmentName, 'alias' => $createdSegmentAlias]]), true);
 
+        assert(isset($selectedSegments[0]['alias'], $selectedSegments[1]['alias']));
         $this->contacts[0][self::FIELD_NAME] = [$selectedSegments[0]['alias'], $selectedSegments[1]['alias'], $createdSegmentAlias];
         $contactId                           = $this->contactId = $this->createContact();
         $campaign                            = $this->createCampaign($contactId, $fieldId, true);
@@ -497,7 +491,7 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
     }
 
     /**
-     * @return array<int,array<int>>
+     * @return array<int, array<string, mixed>>
      */
     private function createSegments(): array
     {
@@ -526,10 +520,15 @@ class CampaignSegmentsFunctionalTest extends MauticMysqlTestCase
         ];
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $segments
+     * @param array<string, string>            $aliasMap
+     */
     private function testCreateSelectField(array $segments, bool $multiselect, array $aliasMap = []): int
     {
         $list = [];
         foreach ($segments as $segment) {
+            assert(isset($segment['alias'], $segment['name']));
             $alias = $segment['alias'];
 
             if (isset($aliasMap[$alias])) {

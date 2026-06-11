@@ -9,14 +9,16 @@ use Mautic\FormBundle\Entity\Action;
 use Mautic\FormBundle\Entity\Form;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Entity\LeadField;
-use Mautic\PluginBundle\Entity\Integration;
-use Mautic\PluginBundle\Entity\Plugin;
 use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\EventListener\FormSubscriber;
+use MauticPlugin\LeuchtfeuerMultiselectHandlingBundle\Tests\PluginActivationTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlTestCase
 {
+    use PluginActivationTrait;
+    protected bool $authenticateApi = true;
+
     private const FIELD_NAME_MULTISELECT = 'test_multiselect_field';
     private const FIELD_NAME_SELECT      = 'test_select_field';
 
@@ -95,23 +97,6 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
         $this->setUpSymfony($this->configParams);
     }
 
-    private function activatePlugin(bool $isPublished=true): void
-    {
-        $this->client->request('GET', '/s/plugins/reload');
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
-
-        $integration = $this->em->getRepository(Integration::class)->findOneBy(['name' => 'LeuchtfeuerMultiselect']);
-        if (empty($integration)) {
-            $plugin      = $this->em->getRepository(Plugin::class)->findOneBy(['bundle' => 'LeuchtfeuerMultiselectHandlingBundle']);
-            $integration = new Integration();
-            $integration->setName('LeuchtfeuerMultiselect');
-            $integration->setPlugin($plugin);
-        }
-        $integration->setIsPublished($isPublished);
-        $this->em->persist($integration);
-        $this->em->flush();
-    }
-
     public function testFormContactMultiselect(): void
     {
         $fieldEntity = $this->createField(true);
@@ -155,6 +140,10 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
         self::assertStringNotContainsString($removedValues[1], $field['value'], 'Field value should not contain the second removed value');
     }
 
+    /**
+     * @param array<string> $multiSelectAdd
+     * @param array<string> $multiSelectRemove
+     */
     private function createForm(int $fieldId, array $multiSelectAdd = [], array $multiSelectRemove = []): Form
     {
         $properties = [
@@ -242,7 +231,7 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
     }
 
     /**
-     * @return array<int>
+     * @return array<Lead>
      */
     private function createContacts(): array
     {
@@ -264,7 +253,9 @@ class FormActionUpdateContactMultiselectFieldFunctionalTest extends MauticMysqlT
 
         $contacts = [];
         foreach ($response['contacts'] as $contact) {
-            $contacts[] = $this->em->getRepository(Lead::class)->find($contact['id']);
+            $lead = $this->em->getRepository(Lead::class)->find($contact['id']);
+            assert($lead instanceof Lead);
+            $contacts[] = $lead;
         }
 
         return $contacts;

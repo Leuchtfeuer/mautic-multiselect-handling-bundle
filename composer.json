@@ -1,6 +1,6 @@
 {
     "name": "leuchtfeuer/mautic-multiselect-handling",
-    "description": "A Mautic plugin that improves the handling of multiselect contact fields in forms and campaigns.",
+    "description": "Provides custom campaign and form actions to manage multiselect fields.",
     "license": "GPL-3.0",
     "type": "mautic-plugin",
     "authors": [
@@ -16,7 +16,7 @@
     "prefer-stable": true,
     "require": {
         "php": "^8.1",
-        "mautic/core-lib": "^5.0",
+        "mautic/core-lib": "^7.0",
         "mautic/plugin-social": "*",
         "ext-json": "*"
     },

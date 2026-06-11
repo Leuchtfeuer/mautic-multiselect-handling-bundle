@@ -29,12 +29,7 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
     {
     }
 
-    /**
-     * @param callable|null $value
-     *
-     * @return ChoiceListInterface<string, int>
-     */
-    public function loadChoiceList($value = null)
+    public function loadChoiceList(?callable $value = null): ChoiceListInterface
     {
         if (null !== $this->choiceList) {
             return $this->choiceList;
@@ -181,13 +176,19 @@ class LeadFieldValuesChoiceLoader implements ChoiceLoaderInterface, ResetInterfa
         $id     = $field->getId();
         $values = [];
         foreach ($properties['list'] as $property) {
-            if (!isset($property['value']) || !isset($property['label'])) {
+            if (!is_array($property) || !isset($property['value'], $property['label'])) {
+                continue;
+            }
+            if (!is_string($property['value']) && !is_int($property['value'])) {
+                continue;
+            }
+            if (!is_string($property['label'])) {
                 continue;
             }
             $values[$id.'-'.$property['value']] = [
                 'id'    => $id,
                 'name'  => $property['label'],
-                'alias' => $property['value'],
+                'alias' => (string) $property['value'],
             ];
         }
 

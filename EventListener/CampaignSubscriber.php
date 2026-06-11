@@ -30,7 +30,7 @@ class CampaignSubscriber implements EventSubscriberInterface
             'formTypeOptions' => [
                 'multiple' => true,
             ],
-            'eventName'   => ActionSubscriber::MANAGE_MULTISELECT_FIELD_EVENT,
+            'batchEventName'   => ActionSubscriber::MANAGE_MULTISELECT_FIELD_EVENT,
         ];
 
         $event->addAction(ActionSubscriber::MANAGE_MULTISELECT_FIELD_ACTION, $action);
@@ -42,16 +42,16 @@ class CampaignSubscriber implements EventSubscriberInterface
             'formTypeOptions' => [
                 'multiple' => false,
             ],
-            'eventName'   => ActionSubscriber::MANAGE_SELECT_FIELD_EVENT,
+            'batchEventName'   => ActionSubscriber::MANAGE_SELECT_FIELD_EVENT,
         ];
 
         $event->addAction(ActionSubscriber::MANAGE_SELECT_FIELD_ACTION, $action);
 
         $action = [
-            'label'       => 'plugin.multiselect_handling.segment_action.label',
-            'description' => 'plugin.multiselect_handling.segment_action.description',
-            'formType'    => SettingsType::class,
-            'eventName'   => ActionSubscriber::MANAGE_SEGMENTS_EVENT,
+            'label'            => 'plugin.multiselect_handling.segment_action.label',
+            'description'      => 'plugin.multiselect_handling.segment_action.description',
+            'formType'         => SettingsType::class,
+            'batchEventName'   => ActionSubscriber::MANAGE_SEGMENTS_EVENT,
         ];
 
         $event->addAction(ActionSubscriber::MANAGE_SEGMENTS_ACTION, $action);

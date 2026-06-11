@@ -26,12 +26,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
     {
     }
 
-    /**
-     * @param callable|null $value
-     *
-     * @return ChoiceListInterface<string, int>
-     */
-    public function loadChoiceList($value = null)
+    public function loadChoiceList(?callable $value = null): ChoiceListInterface
     {
         if (null !== $this->choiceList) {
             return $this->choiceList;
@@ -80,7 +75,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
      * @param array<string|mixed> $choices
      * @param callable|null       $value
      *
-     * @return array<int>
+     * @return array<string>
      */
     public function loadValuesForChoices(array $choices, $value = null): array
     {
@@ -98,7 +93,7 @@ class LeadFieldChoiceLoader implements ChoiceLoaderInterface, ResetInterface
 
             foreach ($fields as $key => $field) {
                 if ($choice === $field->getId()) {
-                    $values[$index] = $field->getId();
+                    $values[$index] = (string) $field->getId();
                     unset($fields[$key]);
                     break;
                 }
